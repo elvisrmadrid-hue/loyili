@@ -29,4 +29,4 @@ Estados: ⬜ pendiente · 🟦 en curso · 🟨 en verificación · ✅ completa
 - 2026-11-10: Git 2.56 instalado con winget; repositorio inicializado (rama `main`) con el primer commit. Módulo cerrado.
 
 ### Módulo 1 — Conexión a Supabase y autenticación base
-- 2026-11-10: especificación en borrador ([01-supabase-auth.md](modules/01-supabase-auth.md)), pendiente de validación.
+- 2026-11-10: especificación validada ([01-supabase-auth.md](modules/01-supabase-auth.md)).

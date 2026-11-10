@@ -1,6 +1,6 @@
 # Módulo 01 — Conexión a Supabase y autenticación base
 
-- **Estado**: borrador
+- **Estado**: validado (2026-11-10)
 - **Fecha**: 2026-11-10
 
 ## Objetivo
@@ -14,6 +14,8 @@ Conectar la aplicación a un proyecto Supabase de desarrollo y permitir que cual
 | Método de acceso | **Email + contraseña** | Lo más simple y gratuito. Otros métodos (código por email, SMS) se pueden añadir después sin rehacer nada. |
 | Tipo de cuenta | **Una sola cuenta para todos** | No se elige rol al registrarse. Lo que la persona puede hacer lo dan sus relaciones: dueño/personal de un comercio (Módulo 2) o cliente de un comercio (Módulo 4). Una misma persona puede ser ambas cosas. |
 | Confirmación de email | **Desactivada por ahora** | Agiliza las pruebas en desarrollo. Se reconsidera antes del despliegue (Módulo 10). |
+| Destino tras iniciar sesión | **`/wallet`** (si no hay `next`) | Toda persona puede ser cliente. Se puede refinar en el Módulo 2 (p. ej. ir a `/panel` si es dueña de un comercio). |
+| Migraciones | **CLI de Supabase como dependencia del proyecto** | El esquema se aplica siempre desde `supabase/migrations/` con un comando, sin cambios a mano en el panel. |
 
 ## Alcance
 
@@ -143,5 +145,5 @@ Pasos que hace el usuario, guiado:
 
 ## Preguntas abiertas
 
-- [ ] Tras iniciar sesión (sin `next`), ¿a dónde va el usuario? Propuesta: `/wallet`, porque toda persona puede ser cliente; quien tenga comercio entrará al panel desde un enlace. Se puede refinar en el Módulo 2 (p. ej. ir a `/panel` si la persona es dueña de un comercio).
+- [x] Tras iniciar sesión (sin `next`), ¿a dónde va el usuario? → `/wallet` (decidido el 2026-11-10).
 - [ ] Región del proyecto Supabase: conviene la más cercana a los usuarios (depende del país objetivo, pregunta abierta en [vision.md](../vision.md)). Para desarrollo da igual; para producción (Módulo 10) importa.
