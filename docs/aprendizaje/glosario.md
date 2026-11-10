@@ -60,11 +60,25 @@ Conceptos técnicos que aparecen durante el desarrollo de Loyili, explicados en 
 
 **`NEXT_PUBLIC_`** — Prefijo que hace que una variable de entorno sea visible en el navegador. Solo para datos no secretos.
 
+**Autenticación vs. autorización** — Autenticación es comprobar *quién eres* (como mostrar el DNI en la puerta). Autorización es decidir *qué puedes hacer* una vez dentro (a qué salas puedes entrar). El Módulo 1 resuelve la primera; RLS y los roles, la segunda.
+
+**Sesión** — El "pase" que recibe el navegador tras iniciar sesión, para no pedir la contraseña en cada página. En Loyili se guarda en *cookies* y `proxy.ts` lo renueva antes de que caduque.
+
+**Open redirect** — Fallo de seguridad en el que un enlace como `/login?next=https://sitio-malo.com` lleva al usuario a otra web tras iniciar sesión. Se evita aceptando solo rutas internas.
+
 ## Herramientas
 
 **Git** — Sistema que guarda el historial de cambios del proyecto, como "puntos de guardado" a los que se puede volver.
 
 **Commit** — Un punto de guardado en Git, con un mensaje que describe el cambio.
+
+**Repositorio** — La carpeta del proyecto más su historial de Git (guardado en la carpeta oculta `.git/`).
+
+**`.gitignore`** — Lista de archivos que Git no debe guardar nunca: secretos (`.env.local`), dependencias descargables (`node_modules/`) y archivos generados (`.next/`).
+
+**winget** — El instalador de programas de Windows desde la terminal, como una "tienda de aplicaciones" por comandos.
+
+**CLI** — *Command Line Interface*: un programa que se usa escribiendo comandos en la terminal en vez de con ventanas y botones. Ej.: la CLI de Supabase (`npx supabase ...`).
 
 **ESLint** — Herramienta que revisa el código en busca de errores comunes y malas prácticas.
 

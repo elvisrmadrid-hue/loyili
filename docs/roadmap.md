@@ -6,8 +6,8 @@ Estados: ⬜ pendiente · 🟦 en curso · 🟨 en verificación · ✅ completa
 
 | # | Módulo | Resultado verificable | Estado |
 |---|---|---|---|
-| 0 | **Entorno y fundamentos** | Proyecto Next.js arranca; estructura, documentación y `CLAUDE.md` listos | 🟨 |
-| 1 | **Conexión a Supabase y autenticación base** | Proyecto Supabase creado y conectado; registro, inicio y cierre de sesión funcionan; rutas protegidas | ⬜ |
+| 0 | **Entorno y fundamentos** | Proyecto Next.js arranca; estructura, documentación y `CLAUDE.md` listos | ✅ |
+| 1 | **Conexión a Supabase y autenticación base** | Proyecto Supabase creado y conectado; registro, inicio y cierre de sesión funcionan; rutas protegidas | 🟦 |
 | 2 | **Comercios** | Un usuario crea su comercio, sus sucursales e invita personal; RLS aísla cada comercio | ⬜ |
 | 3 | **Programa de fidelización** | El comercio configura su regla de acumulación | ⬜ |
 | 4 | **Clientes y membresías** | Un cliente queda asociado a un comercio; el comercio ve su lista de clientes | ⬜ |
@@ -26,4 +26,7 @@ Estados: ⬜ pendiente · 🟦 en curso · 🟨 en verificación · ✅ completa
 - Documentación inicial: visión, arquitectura, modelo de dominio, ADRs, plantilla de módulos, glosario.
 - `CLAUDE.md` y configuración de Claude Code (`.claude/settings.json`).
 - Estructura de carpetas: route groups `(public)`, `(merchant)`, `(wallet)`; `src/modules`, `src/lib/supabase`, `supabase/migrations`.
-- Pendiente: instalar Git e inicializar el repositorio (requiere permiso del usuario).
+- 2026-11-10: Git 2.56 instalado con winget; repositorio inicializado (rama `main`) con el primer commit. Módulo cerrado.
+
+### Módulo 1 — Conexión a Supabase y autenticación base
+- 2026-11-10: especificación en borrador ([01-supabase-auth.md](modules/01-supabase-auth.md)), pendiente de validación.

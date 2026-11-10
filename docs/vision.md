@@ -50,5 +50,5 @@ Estas decisiones son de negocio y se resolverán con el usuario antes del módul
 - [ ] Forma de la regla de acumulación (¿puntos por monto gastado? ¿por visita? ¿ambas?) y cómo se redondea.
 - [ ] ¿Los puntos vencen? Si es así, ¿con qué política?
 - [ ] ¿El cliente se registra solo, o lo registra el comercio en caja (o ambas)?
-- [ ] Método de inicio de sesión del cliente (email con código, teléfono con SMS, otro).
+- [x] Método de inicio de sesión del cliente → **email + contraseña**, una sola cuenta para clientes y comercios (decidido el 2026-11-10; ver [Módulo 1](modules/01-supabase-auth.md)). Otros métodos podrán añadirse más adelante.
 - [ ] Modelo de negocio de Loyili (gratuito, suscripción por comercio, comisión).
