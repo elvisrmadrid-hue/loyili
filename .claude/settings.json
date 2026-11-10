@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev)",
+      "Bash(npm run build)",
+      "Bash(npm run lint)",
+      "Bash(npm run typecheck)",
+      "Bash(npm test*)",
+      "PowerShell(npm run dev)",
+      "PowerShell(npm run build)",
+      "PowerShell(npm run lint)",
+      "PowerShell(npm run typecheck)",
+      "PowerShell(npm test*)"
+    ],
+    "deny": [
+      "Read(./.env.local)",
+      "Read(./.env)",
+      "Read(./.env.production*)"
+    ]
+  }
+}
