@@ -9,14 +9,17 @@ import { TextField } from "@/components/ui/text-field";
 type SignUpFormProps = {
   action: (state: AuthFormState, formData: FormData) => Promise<AuthFormState>;
   passwordMinLength: number;
+  /** Internal path to go to after signing up. */
+  next: string;
 };
 
-export function SignUpForm({ action, passwordMinLength }: SignUpFormProps) {
+export function SignUpForm({ action, passwordMinLength, next }: SignUpFormProps) {
   const [state, formAction] = useActionState(action, undefined);
 
   return (
     <form action={formAction} className="flex flex-col gap-4" noValidate>
       <FormAlert error={state?.error} message={state?.message} />
+      <input type="hidden" name="next" value={next} />
       <TextField
         label="Nombre"
         name="fullName"

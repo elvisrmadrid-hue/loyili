@@ -1,6 +1,6 @@
 # Módulo 02 — Comercios
 
-- **Estado**: validado (2026-11-10)
+- **Estado**: implementado (2026-11-10), pendiente de prueba manual
 - **Fecha**: 2026-11-10
 
 ## Objetivo
@@ -165,8 +165,9 @@ En el Módulo 5, si una sucursal ya tiene compras asociadas, se revisará si se 
 - `index.ts`: la API pública del módulo.
 
 Cambios en `src/modules/auth/`:
-- `signIn` sin `next` decide entre `/panel` y `/wallet` según si la persona pertenece a algún comercio.
-  - Para no importar archivos internos de otro módulo, la consulta se expone desde `merchants/index.ts`.
+- Sin `next`, tras iniciar sesión se va a **`/inicio`** (Route Handler en `src/app/inicio/route.ts`), que decide el destino: el panel del único comercio, la lista `/panel` si tiene varios, o `/wallet` si no tiene ninguno.
+  - Así `auth` no depende de `merchants` (la dependencia va solo en un sentido: `merchants` → `auth`).
+- Un usuario con sesión que abre `/login?next=...` va directo a `next`.
 - `/login` ↔ `/registro` conservan `next` en sus enlaces, y `signUp` lo respeta (con `safeNextPath`).
 - `/invitacion` se añade a las rutas protegidas del proxy.
 
@@ -174,7 +175,7 @@ Cambios en `src/modules/auth/`:
 
 | Ruta | Quién | Qué muestra |
 |---|---|---|
-| `/panel` | cualquiera con sesión | Sin comercios: invitación a "Crear mi comercio". Con uno: entra directo a él. Con varios: lista para elegir, con el rol en cada uno. |
+| `/panel` | cualquiera con sesión | "Mis comercios": sin comercios, invitación a "Crear mi comercio"; con uno o más, lista con el rol en cada uno y "Crear otro comercio". (Quien tiene un solo comercio entra directo a él al iniciar sesión, vía `/inicio`). |
 | `/panel/nuevo` | cualquiera con sesión | Formulario: nombre y moneda. Al guardar, lleva a la portada del comercio nuevo. |
 | `/panel/[merchantId]` | miembros | Portada: nombre, moneda y mi rol. Menú: Sucursales, Personal (dueño), Ajustes (dueño). Enlace a "Mis comercios". |
 | `/panel/[merchantId]/sucursales` | miembros | Lista de sucursales. El dueño puede añadir, editar y eliminar (con confirmación). |
@@ -189,7 +190,7 @@ Cambios en `src/modules/auth/`:
 
 - [ ] La migración se aplica con `npx supabase db push --remote` y crea las 4 tablas con RLS activado.
 - [ ] Una persona con sesión crea un comercio con nombre y moneda, y queda como dueña.
-- [ ] Una persona con dos comercios los ve en `/panel` y puede entrar a cada uno. Con uno solo, entra directo.
+- [ ] Una persona con dos comercios los ve en `/panel` y puede entrar a cada uno. Con uno solo, al iniciar sesión entra directo a él.
 - [ ] El dueño edita el nombre y la moneda; el personal no puede editar ninguno de los dos (ni desde la pantalla ni desde la API).
 - [ ] El dueño crea, edita y elimina sucursales. No se permiten dos sucursales con el mismo nombre en un comercio.
 - [ ] El dueño genera un enlace de invitación, lo copia y lo ve en la lista de pendientes. Puede revocarlo.
@@ -214,6 +215,8 @@ Cambios en `src/modules/auth/`:
   2. Adelantar su `expires_at` con una consulta en el *SQL Editor* de Supabase (son datos de prueba, no un cambio de esquema).
   3. Comprobar que el enlace queda rechazado.
 - **Manual en el navegador**: recorrer los criterios con dos navegadores (o una ventana normal y otra privada) para ser dueño y personal a la vez.
+
+**Resultado automático (2026-11-10)**: lint, typecheck y build sin errores; `verify:rls` 52/52 PASS; prueba de humo (script temporal, no versionado) que renderiza cada pantalla con sesión de dueño y de personal contra el servidor de desarrollo: 20/20 PASS. Falta la prueba manual de los formularios en el navegador.
 
 ## Riesgos
 

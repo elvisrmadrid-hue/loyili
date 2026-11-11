@@ -25,9 +25,10 @@ profiles ──────────────┬────────�
 | Entidad | Descripción | Módulo |
 |---|---|---|
 | `profiles` | Datos del usuario (nombre, teléfono). 1:1 con `auth.users` de Supabase. | 1 |
-| `merchants` | Comercio: nombre, identificador público (`slug`), moneda. | 2 |
+| `merchants` | Comercio: nombre y moneda (editable mientras no haya compras). El identificador público (`slug`) se decide en el Módulo 4. | 2 |
 | `merchant_members` | Relación usuario ↔ comercio con rol (`owner`, `staff`). | 2 |
-| `branches` | Sucursales de un comercio. | 2 |
+| `branches` | Sucursales de un comercio (opcionales). | 2 |
+| `merchant_invitations` | Enlaces de invitación de un solo uso (7 días) para unirse como personal. Solo se guarda la huella del código. | 2 |
 | `loyalty_programs` | Configuración del programa del comercio (regla de acumulación, estado). | 3 |
 | `memberships` | Cliente inscrito en un comercio. Única por par (cliente, comercio). | 4 |
 | `point_transactions` | **Ledger**: cada movimiento de puntos de una membresía. | 5 |
@@ -58,6 +59,7 @@ Columnas previstas: `id`, `merchant_id`, `membership_id`, `type`, `points` (ente
 4. El personal solo opera sobre el comercio al que pertenece.
 5. Un cliente solo ve sus propias membresías y movimientos.
 6. Los puntos de un comercio solo se canjean en ese comercio.
+7. La moneda de un comercio no puede cambiar una vez que tiene compras registradas (se refuerza en la base de datos en el Módulo 5).
 
 ## Estados del canje
 

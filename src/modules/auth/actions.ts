@@ -51,6 +51,7 @@ function authErrorMessage(error: AuthError): string {
 
 export async function signUp(_prev: AuthFormState, formData: FormData): Promise<AuthFormState> {
   const values = { fullName: field(formData, "fullName"), email: field(formData, "email") };
+  const next = safeNextPath(field(formData, "next"));
   const parsed = signUpSchema.safeParse({ ...values, password: field(formData, "password") });
   if (!parsed.success) return { fieldErrors: fieldErrorsOf(parsed.error), values };
 
@@ -69,7 +70,7 @@ export async function signUp(_prev: AuthFormState, formData: FormData): Promise<
     return { message: "Te enviamos un correo para confirmar tu cuenta. Revisa tu bandeja de entrada." };
   }
 
-  redirect(DEFAULT_AFTER_SIGN_IN);
+  redirect(next);
 }
 
 export async function signIn(_prev: AuthFormState, formData: FormData): Promise<AuthFormState> {

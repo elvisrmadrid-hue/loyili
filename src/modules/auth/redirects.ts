@@ -1,8 +1,11 @@
-/** Where users land after signing in when there is no `next` parameter. */
-export const DEFAULT_AFTER_SIGN_IN = "/wallet";
+/**
+ * Where users land after signing in when there is no `next` parameter.
+ * /inicio decides: their merchant panel if they belong to a merchant, otherwise the wallet.
+ */
+export const DEFAULT_AFTER_SIGN_IN = "/inicio";
 
 /** Routes that require a signed-in user. */
-export const PROTECTED_PREFIXES = ["/panel", "/wallet"] as const;
+export const PROTECTED_PREFIXES = ["/panel", "/wallet", "/inicio", "/invitacion"] as const;
 
 /** Routes only for signed-out visitors (signed-in users are sent to DEFAULT_AFTER_SIGN_IN). */
 export const GUEST_ONLY_PATHS = ["/login", "/registro"] as const;

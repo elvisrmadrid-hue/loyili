@@ -1,10 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
-import {
-  DEFAULT_AFTER_SIGN_IN,
-  isGuestOnlyPath,
-  isProtectedPath,
-} from "@/modules/auth/redirects";
+import { isGuestOnlyPath, isProtectedPath, safeNextPath } from "@/modules/auth/redirects";
 
 /**
  * Runs before every matched request:
@@ -15,7 +11,7 @@ import {
  */
 export async function proxy(request: NextRequest) {
   const { response, userId } = await updateSession(request);
-  const { pathname, search } = request.nextUrl;
+  const { pathname, search, searchParams } = request.nextUrl;
 
   if (!userId && isProtectedPath(pathname)) {
     const loginUrl = new URL("/login", request.url);
@@ -23,8 +19,10 @@ export async function proxy(request: NextRequest) {
     return redirectKeepingCookies(loginUrl, response);
   }
 
+  // Already signed in: skip login/sign-up and go where they were heading (e.g. an invitation).
   if (userId && isGuestOnlyPath(pathname)) {
-    return redirectKeepingCookies(new URL(DEFAULT_AFTER_SIGN_IN, request.url), response);
+    const next = safeNextPath(searchParams.get("next"));
+    return redirectKeepingCookies(new URL(next, request.url), response);
   }
 
   return response;
