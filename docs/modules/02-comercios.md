@@ -1,6 +1,6 @@
 # Módulo 02 — Comercios
 
-- **Estado**: borrador
+- **Estado**: validado (2026-11-10)
 - **Fecha**: 2026-11-10
 
 ## Objetivo
@@ -15,16 +15,14 @@ Que cualquier persona con cuenta en Loyili pueda crear su comercio, registrar su
 | Moneda | **Cada comercio elige la suya** de una lista corta | Se usará en el Módulo 3 para calcular puntos por monto gastado. |
 | Comercios por persona | **Varios** | Una persona con dos negocios los gestiona con una sola cuenta. |
 | Sucursales | **Opcionales** | Un negocio con un solo local no necesita crear ninguna. |
+| Cambio de moneda | **Permitido mientras el comercio no tenga compras registradas** | Corrige un error al elegirla sin borrar el comercio ni pedir soporte. Con compras ya registradas, cambiarla alteraría el significado de los montos guardados. En este módulo todavía no hay compras, así que siempre se puede cambiar; en el Módulo 5 la base de datos bloqueará el cambio en cuanto exista el primer movimiento. Si la regla de acumulación del Módulo 3 depende de la moneda, al cambiarla habrá que revisarla. |
 
-## Propuestas a validar
-
-Estos puntos son de seguridad o de experiencia de uso, no reglas de negocio. Los propongo yo; puedes cambiarlos al validar.
+## Propuestas validadas (2026-11-10)
 
 | Tema | Propuesta |
 |---|---|
 | Vigencia del enlace de invitación | **7 días** y **un solo uso**. Si vence o se usa, el dueño genera otro. |
 | Quién puede crear un comercio | **Cualquier persona con cuenta**, sin aprobación de un administrador. La administración de la plataforma llegará en una fase posterior. |
-| Moneda | **No se puede cambiar** después de crear el comercio. Cambiarla cuando ya existan compras registradas alteraría el significado de los montos. |
 | Destino tras iniciar sesión (sin `next`) | **`/panel`** si la persona pertenece a algún comercio; si no, **`/wallet`** (como hasta ahora). |
 | Roles | Solo **`owner`** (dueño, quien crea el comercio) y **`staff`** (personal). Un comercio tiene un único dueño en este módulo. |
 
@@ -135,7 +133,7 @@ En el Módulo 5, si una sucursal ya tiene compras asociadas, se revisará si se 
 
 | Tabla | Leer | Crear | Modificar | Borrar |
 |---|---|---|---|---|
-| `merchants` | miembros | solo vía `create_merchant` | dueño, solo `name` | nadie (fuera de alcance) |
+| `merchants` | miembros | solo vía `create_merchant` | dueño (`name`, `currency`) | nadie (fuera de alcance) |
 | `merchant_members` | la propia fila; el dueño ve todas las de su comercio | solo vía funciones | nadie | dueño, solo filas `staff` |
 | `branches` | miembros | dueño | dueño (`name`, `address`) | dueño |
 | `merchant_invitations` | dueño (sin `token_hash`) | solo vía función | nadie | dueño (revocar pendientes) |
@@ -147,7 +145,7 @@ En el Módulo 5, si una sucursal ya tiene compras asociadas, se revisará si se 
 `src/modules/merchants/`
 - `schemas.ts`:
   - `createMerchantSchema` (nombre 1–100, moneda de la lista)
-  - `updateMerchantSchema` (nombre)
+  - `updateMerchantSchema` (nombre, moneda)
   - `branchSchema` (nombre 1–100, dirección opcional ≤200)
   - token de invitación (formato)
 - `queries.ts`:
@@ -181,7 +179,7 @@ Cambios en `src/modules/auth/`:
 | `/panel/[merchantId]` | miembros | Portada: nombre, moneda y mi rol. Menú: Sucursales, Personal (dueño), Ajustes (dueño). Enlace a "Mis comercios". |
 | `/panel/[merchantId]/sucursales` | miembros | Lista de sucursales. El dueño puede añadir, editar y eliminar (con confirmación). |
 | `/panel/[merchantId]/personal` | dueño | Miembros (nombre, rol, desde cuándo) con opción "Quitar" para el personal. Botón "Generar enlace de invitación": muestra el enlace con un botón para copiarlo. Lista de invitaciones pendientes con su vencimiento y "Revocar". |
-| `/panel/[merchantId]/ajustes` | dueño | Editar el nombre. La moneda se muestra sin poder cambiarla. |
+| `/panel/[merchantId]/ajustes` | dueño | Editar el nombre y la moneda (con aviso de que solo se puede cambiar mientras no haya compras registradas). |
 | `/invitacion/[token]` | con sesión (si no hay, pasa por login/registro y vuelve) | "Te invitaron a unirte a **Comercio X** como personal" + botón "Aceptar". Mensajes claros si el enlace venció, ya se usó, no existe o si ya eres miembro. |
 
 - Quien no es miembro de un comercio y abre su URL ve una página "no encontrado". No se revela que el comercio existe.
@@ -192,7 +190,7 @@ Cambios en `src/modules/auth/`:
 - [ ] La migración se aplica con `npx supabase db push --remote` y crea las 4 tablas con RLS activado.
 - [ ] Una persona con sesión crea un comercio con nombre y moneda, y queda como dueña.
 - [ ] Una persona con dos comercios los ve en `/panel` y puede entrar a cada uno. Con uno solo, entra directo.
-- [ ] El dueño edita el nombre; la moneda no se puede cambiar (ni desde la pantalla ni desde la API).
+- [ ] El dueño edita el nombre y la moneda; el personal no puede editar ninguno de los dos (ni desde la pantalla ni desde la API).
 - [ ] El dueño crea, edita y elimina sucursales. No se permiten dos sucursales con el mismo nombre en un comercio.
 - [ ] El dueño genera un enlace de invitación, lo copia y lo ve en la lista de pendientes. Puede revocarlo.
 - [ ] Una persona **sin cuenta** abre el enlace, se registra y, tras registrarse, vuelve a la invitación, la acepta y queda como personal.
@@ -210,7 +208,7 @@ Cambios en `src/modules/auth/`:
 - **RLS**: `npm run verify:rls` ampliado.
   - Crea tres usuarios: A (dueño del comercio 1), B (dueño del comercio 2) y C (personal del comercio 1, unido por invitación).
   - Comprueba el aislamiento entre comercios, los permisos del personal y que la invitación sea de un solo uso.
-  - Comprueba también que no se puede cambiar la moneda, insertarse como miembro directamente ni leer `token_hash`.
+  - Comprueba también que el personal no puede editar el comercio, insertarse como miembro directamente ni leer `token_hash`.
 - **Vencimiento de invitaciones**: no se puede simular desde la API sin la clave secreta. Se comprueba manualmente en el proyecto de desarrollo:
   1. Generar una invitación de prueba.
   2. Adelantar su `expires_at` con una consulta en el *SQL Editor* de Supabase (son datos de prueba, no un cambio de esquema).

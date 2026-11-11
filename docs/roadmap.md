@@ -8,7 +8,7 @@ Estados: ⬜ pendiente · 🟦 en curso · 🟨 en verificación · ✅ completa
 |---|---|---|---|
 | 0 | **Entorno y fundamentos** | Proyecto Next.js arranca; estructura, documentación y `CLAUDE.md` listos | ✅ |
 | 1 | **Conexión a Supabase y autenticación base** | Proyecto Supabase creado y conectado; registro, inicio y cierre de sesión funcionan; rutas protegidas | ✅ |
-| 2 | **Comercios** | Un usuario crea su comercio, sus sucursales e invita personal; RLS aísla cada comercio | ⬜ |
+| 2 | **Comercios** | Un usuario crea su comercio, sus sucursales e invita personal; RLS aísla cada comercio | 🟦 |
 | 3 | **Programa de fidelización** | El comercio configura su regla de acumulación | ⬜ |
 | 4 | **Clientes y membresías** | Un cliente queda asociado a un comercio; el comercio ve su lista de clientes | ⬜ |
 | 5 | **Ledger de puntos: acumulación** | El personal registra una compra y se acreditan los puntos correctos; saldo e historial correctos (con pruebas automáticas) | ⬜ |
@@ -36,3 +36,6 @@ Estados: ⬜ pendiente · 🟦 en curso · 🟨 en verificación · ✅ completa
 - Verificado: lint, typecheck, build, `npm run verify:rls` (12/12) y recorrido manual del usuario en el navegador. Módulo cerrado.
 - Decisión registrada en [ADR 0003](architecture/adr/0003-supabase-como-codigo.md).
 - Limitación conocida: la recuperación de contraseña solo funciona abriendo el correo en el mismo navegador, hasta configurar un SMTP propio.
+
+### Módulo 2 — Comercios
+- 2026-11-10: especificación validada ([02-comercios.md](modules/02-comercios.md)). Moneda editable mientras no haya compras registradas.
