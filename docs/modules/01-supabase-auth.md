@@ -108,12 +108,13 @@ Comportamiento:
 ## Configuración en el panel de Supabase (no es esquema)
 
 Pasos que hace el usuario, guiado:
-1. Crear cuenta en supabase.com y un proyecto `loyili-dev` (plan gratuito), guardando la contraseña de la base de datos.
+1. Crear cuenta en supabase.com y un proyecto `loyili-dev` (plan gratuito), guardando la contraseña de la base de datos. En *Security*: **Enable Data API** ✅, **Automatically expose new tables** ⬜ (cada migración concede sus permisos explícitamente con `grant`), **Enable automatic RLS** ✅ (red de seguridad; las migraciones igualmente activan RLS de forma explícita).
 2. Copiar URL del proyecto y claves a `.env.local`.
-3. *Authentication → Sign In / Providers → Email*: desactivar **Confirm email**; contraseña mínima 8.
-4. *Authentication → URL Configuration*: Site URL `http://localhost:3000` y URL de redirección `http://localhost:3000/**`.
-5. *Authentication → Email Templates → Reset password*: ajustar el enlace para que apunte a `/auth/confirm` (se indicará el texto exacto).
-6. `npx supabase login` y `npx supabase link` para conectar la CLI con el proyecto.
+3. `npx supabase login` y `npx supabase link` para conectar la CLI con el proyecto (interactivo: lo hace el usuario).
+4. Ajustes de autenticación **versionados en [supabase/config.toml](../../supabase/config.toml)** y aplicados con `npx supabase config push` (revisando antes el diff con `npx supabase config diff`), en lugar de cambiarlos a mano en el panel:
+   - Confirmación de email desactivada; contraseña mínima 8; `max_frequency` 60 s.
+   - Site URL `http://localhost:3000` y redirección permitida `http://localhost:3000/**`.
+   - Plantilla del correo de recuperación ([supabase/templates/recovery.html](../../supabase/templates/recovery.html)) con enlace a `/auth/confirm?token_hash=…&type=recovery&next=/restablecer`. **Desactivada (2026-11-10)**: Supabase no permite modificar plantillas en el plan gratuito con el proveedor de correo por defecto. Se usa la plantilla estándar (enlace `?code=`, también soportado por `/auth/confirm`), que **solo funciona si el correo se abre en el mismo navegador** donde se pidió la recuperación. Se reactivará al configurar un SMTP propio.
 
 ## Criterios de aceptación
 
@@ -135,7 +136,7 @@ Pasos que hace el usuario, guiado:
 ## Verificación
 
 - **Automática**: `npm run lint`, `npm run typecheck`, `npm run build`.
-- **RLS**: script temporal (fuera del proyecto, en la carpeta temporal de la sesión) que inicia sesión con dos usuarios de prueba usando la clave publicable y comprueba que cada uno solo ve su propio perfil.
+- **RLS**: `npm run verify:rls` ([scripts/verify-rls.mjs](../../scripts/verify-rls.mjs)). Crea dos usuarios de prueba con la clave publicable y comprueba aislamiento, permisos por columna, trigger y contraseña mínima en el servidor. Se guardó en el proyecto (en lugar de un script temporal) para poder repetirlo cuando cambien las políticas. Cada ejecución deja 2 usuarios `loyili-rls-*@mailinator.com`, que se pueden borrar desde *Authentication → Users*.
 - **Manual en el navegador**: recorrer cada criterio de aceptación (registro, login, errores, logout, rutas protegidas, `next`, recarga, recuperación).
 
 ## Riesgos
