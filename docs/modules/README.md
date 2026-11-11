@@ -8,3 +8,4 @@ Nombre de archivo: `NN-nombre.md` (por ejemplo `01-supabase-auth.md`), con el mi
 |---|---|---|
 | 0 | Entorno y fundamentos | (este paso no requiere especificación aparte; ver roadmap) |
 | 1 | Conexión a Supabase y autenticación base | [01-supabase-auth.md](01-supabase-auth.md) |
+| 2 | Comercios | [02-comercios.md](02-comercios.md) |
