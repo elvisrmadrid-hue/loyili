@@ -6,5 +6,6 @@ Un ADR registra una decisión técnica importante: el contexto, la decisión y s
 |---|---|---|
 | [0001](0001-nextjs-supabase.md) | Next.js full-stack con Supabase | Aceptada |
 | [0002](0002-ledger-inmutable.md) | Ledger de puntos inmutable | Aceptada |
+| [0003](0003-supabase-como-codigo.md) | Esquema y configuración de Supabase como código | Aceptada |
 
 Para una nueva decisión: copiar el formato de un ADR existente, numerar de forma consecutiva y añadirlo a esta tabla. Un ADR no se edita para cambiar la decisión: se crea uno nuevo que lo reemplaza.

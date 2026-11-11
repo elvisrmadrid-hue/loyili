@@ -52,6 +52,14 @@ Conceptos técnicos que aparecen durante el desarrollo de Loyili, explicados en 
 
 **Transacción** — Grupo de operaciones en la base de datos que se ejecutan todas o ninguna. Evita, por ejemplo, descontar puntos sin registrar el canje.
 
+**Trigger (disparador)** — Instrucción que la base de datos ejecuta sola cuando ocurre algo. Ej.: "cuando se cree un usuario, crea su perfil". Funciona como un sensor de movimiento que enciende la luz.
+
+**Política RLS** — Cada regla concreta de RLS. Ej.: "un usuario solo puede leer la fila cuyo `id` es el suyo". Sin una política que lo permita, la base de datos responde como si la fila no existiera.
+
+**`grant` / `revoke`** — Comandos SQL que dan o quitan permisos sobre una tabla (leer, insertar, modificar ciertas columnas). Trabajan junto con RLS: `grant` decide *qué acciones* se permiten; RLS, *sobre qué filas*.
+
+**`security definer`** — Función de la base de datos que se ejecuta con los permisos de quien la creó, no de quien la llama. Es potente, como una llave maestra, por eso se protege fijando `search_path` y quitando el permiso de ejecutarla directamente.
+
 **Idempotencia** — Propiedad de una operación que, si se repite por error (doble clic, reintento de red), produce el mismo resultado que hacerla una sola vez.
 
 ## Seguridad
@@ -79,6 +87,12 @@ Conceptos técnicos que aparecen durante el desarrollo de Loyili, explicados en 
 **winget** — El instalador de programas de Windows desde la terminal, como una "tienda de aplicaciones" por comandos.
 
 **CLI** — *Command Line Interface*: un programa que se usa escribiendo comandos en la terminal en vez de con ventanas y botones. Ej.: la CLI de Supabase (`npx supabase ...`).
+
+**Configuración como código** — Guardar los ajustes de un servicio (como Supabase) en archivos del proyecto en vez de cambiarlos con clics. Así quedan en Git, se pueden revisar y repetir en otro entorno.
+
+**Dry-run (ensayo)** — Ejecutar un comando en modo simulación: muestra lo que haría sin hacerlo. Como la vista previa antes de imprimir.
+
+**SMTP** — El protocolo para enviar correos. Un "proveedor SMTP propio" es un servicio de envío de correos que contratas (con un plan gratuito o de pago) para no depender del envío limitado de Supabase.
 
 **ESLint** — Herramienta que revisa el código en busca de errores comunes y malas prácticas.
 

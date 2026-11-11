@@ -1,6 +1,6 @@
 # Módulo 01 — Conexión a Supabase y autenticación base
 
-- **Estado**: validado (2026-11-10)
+- **Estado**: verificado (2026-11-10)
 - **Fecha**: 2026-11-10
 
 ## Objetivo
@@ -118,26 +118,28 @@ Pasos que hace el usuario, guiado:
 
 ## Criterios de aceptación
 
-- [ ] La app arranca con `.env.local` configurado y se conecta al proyecto Supabase.
-- [ ] La migración se aplica con `npx supabase db push` y crea `profiles` con RLS activado.
-- [ ] Un visitante crea una cuenta en `/registro` y queda con sesión iniciada en `/wallet`, viendo su nombre.
-- [ ] Al registrarse se crea automáticamente su fila en `profiles`.
-- [ ] Registro con email ya usado, email inválido o contraseña de menos de 8 caracteres muestra un error claro y no crea nada.
-- [ ] Un usuario inicia sesión en `/login`; con credenciales incorrectas ve "Email o contraseña incorrectos".
-- [ ] "Cerrar sesión" termina la sesión y lleva a `/`; después, `/wallet` ya no es accesible.
-- [ ] Sin sesión, `/panel` y `/wallet` redirigen a `/login?next=...` y, tras entrar, se vuelve a la ruta original.
-- [ ] Un `next` externo (p. ej. `https://otro-sitio.com`) se ignora.
-- [ ] La sesión se mantiene al recargar la página y al cerrar y abrir el navegador.
-- [ ] Recuperación: `/recuperar` envía el correo; el enlace lleva a `/restablecer`; tras cambiarla, se entra con la contraseña nueva.
-- [ ] RLS: un usuario no puede leer el perfil de otro (comprobado con script).
-- [ ] `SUPABASE_SECRET_KEY` no aparece en ningún archivo que llegue al navegador.
-- [ ] `npm run lint`, `npm run typecheck` y `npm run build` pasan sin errores.
+- [x] La app arranca con `.env.local` configurado y se conecta al proyecto Supabase.
+- [x] La migración se aplica con `npx supabase db push` y crea `profiles` con RLS activado.
+- [x] Un visitante crea una cuenta en `/registro` y queda con sesión iniciada en `/wallet`, viendo su nombre.
+- [x] Al registrarse se crea automáticamente su fila en `profiles`.
+- [x] Registro con email ya usado, email inválido o contraseña de menos de 8 caracteres muestra un error claro y no crea nada.
+- [x] Un usuario inicia sesión en `/login`; con credenciales incorrectas ve "Email o contraseña incorrectos".
+- [x] "Cerrar sesión" termina la sesión y lleva a `/`; después, `/wallet` ya no es accesible.
+- [x] Sin sesión, `/panel` y `/wallet` redirigen a `/login?next=...` y, tras entrar, se vuelve a la ruta original.
+- [x] Un `next` externo (p. ej. `https://otro-sitio.com`) se ignora.
+- [x] La sesión se mantiene al recargar la página y al cerrar y abrir el navegador.
+- [x] Recuperación: `/recuperar` envía el correo; el enlace lleva a `/restablecer`; tras cambiarla, se entra con la contraseña nueva.
+- [x] RLS: un usuario no puede leer el perfil de otro (comprobado con script).
+- [x] `SUPABASE_SECRET_KEY` no aparece en ningún archivo que llegue al navegador.
+- [x] `npm run lint`, `npm run typecheck` y `npm run build` pasan sin errores.
 
 ## Verificación
 
 - **Automática**: `npm run lint`, `npm run typecheck`, `npm run build`.
 - **RLS**: `npm run verify:rls` ([scripts/verify-rls.mjs](../../scripts/verify-rls.mjs)). Crea dos usuarios de prueba con la clave publicable y comprueba aislamiento, permisos por columna, trigger y contraseña mínima en el servidor. Se guardó en el proyecto (en lugar de un script temporal) para poder repetirlo cuando cambien las políticas. Cada ejecución deja 2 usuarios `loyili-rls-*@mailinator.com`, que se pueden borrar desde *Authentication → Users*.
 - **Manual en el navegador**: recorrer cada criterio de aceptación (registro, login, errores, logout, rutas protegidas, `next`, recarga, recuperación).
+
+**Resultado (2026-11-10)**: lint, typecheck y build sin errores; `verify:rls` 12/12 PASS; redirecciones del proxy comprobadas con peticiones HTTP; recorrido manual en el navegador hecho por el usuario, todo correcto. Commit `a1c86fc`.
 
 ## Riesgos
 
