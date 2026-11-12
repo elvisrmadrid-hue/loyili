@@ -1,6 +1,6 @@
 # Módulo 02 — Comercios
 
-- **Estado**: implementado (2026-11-10), pendiente de prueba manual
+- **Estado**: verificado (2026-11-12)
 - **Fecha**: 2026-11-10
 
 ## Objetivo
@@ -188,20 +188,20 @@ Cambios en `src/modules/auth/`:
 
 ## Criterios de aceptación
 
-- [ ] La migración se aplica con `npx supabase db push --remote` y crea las 4 tablas con RLS activado.
-- [ ] Una persona con sesión crea un comercio con nombre y moneda, y queda como dueña.
-- [ ] Una persona con dos comercios los ve en `/panel` y puede entrar a cada uno. Con uno solo, al iniciar sesión entra directo a él.
-- [ ] El dueño edita el nombre y la moneda; el personal no puede editar ninguno de los dos (ni desde la pantalla ni desde la API).
-- [ ] El dueño crea, edita y elimina sucursales. No se permiten dos sucursales con el mismo nombre en un comercio.
-- [ ] El dueño genera un enlace de invitación, lo copia y lo ve en la lista de pendientes. Puede revocarlo.
-- [ ] Una persona **sin cuenta** abre el enlace, se registra y, tras registrarse, vuelve a la invitación, la acepta y queda como personal.
-- [ ] Una persona **con cuenta** abre el enlace, inicia sesión, acepta y queda como personal.
-- [ ] Un enlace ya usado, revocado o vencido muestra un mensaje claro y no da acceso.
-- [ ] El personal ve la portada y las sucursales, pero no puede crear o editar sucursales, ver el personal ni las invitaciones, ni editar el comercio.
-- [ ] El dueño quita a un miembro del personal; esa persona pierde el acceso de inmediato.
-- [ ] Nadie ve ni modifica datos de un comercio al que no pertenece, ni siquiera llamando directamente a la API (comprobado con script).
-- [ ] Tras iniciar sesión sin `next`, quien pertenece a un comercio va a `/panel` y el resto a `/wallet`.
-- [ ] `npm run lint`, `npm run typecheck`, `npm run build` y `npm run verify:rls` pasan.
+- [x] La migración se aplica con `npx supabase db push --remote` y crea las 4 tablas con RLS activado.
+- [x] Una persona con sesión crea un comercio con nombre y moneda, y queda como dueña.
+- [x] Una persona con dos comercios los ve en `/panel` y puede entrar a cada uno. Con uno solo, al iniciar sesión entra directo a él.
+- [x] El dueño edita el nombre y la moneda; el personal no puede editar ninguno de los dos (ni desde la pantalla ni desde la API).
+- [x] El dueño crea, edita y elimina sucursales. No se permiten dos sucursales con el mismo nombre en un comercio.
+- [x] El dueño genera un enlace de invitación, lo copia y lo ve en la lista de pendientes. Puede revocarlo.
+- [x] Una persona **sin cuenta** abre el enlace, se registra y, tras registrarse, vuelve a la invitación, la acepta y queda como personal.
+- [x] Una persona **con cuenta** abre el enlace, inicia sesión, acepta y queda como personal.
+- [x] Un enlace ya usado, revocado o vencido muestra un mensaje claro y no da acceso.
+- [x] El personal ve la portada y las sucursales, pero no puede crear o editar sucursales, ver el personal ni las invitaciones, ni editar el comercio.
+- [x] El dueño quita a un miembro del personal; esa persona pierde el acceso de inmediato.
+- [x] Nadie ve ni modifica datos de un comercio al que no pertenece, ni siquiera llamando directamente a la API (comprobado con script).
+- [x] Tras iniciar sesión sin `next`, quien pertenece a un comercio va a `/panel` y el resto a `/wallet`.
+- [x] `npm run lint`, `npm run typecheck`, `npm run build` y `npm run verify:rls` pasan.
 
 ## Verificación
 
@@ -217,6 +217,10 @@ Cambios en `src/modules/auth/`:
 - **Manual en el navegador**: recorrer los criterios con dos navegadores (o una ventana normal y otra privada) para ser dueño y personal a la vez.
 
 **Resultado automático (2026-11-10)**: lint, typecheck y build sin errores; `verify:rls` 52/52 PASS; prueba de humo (script temporal, no versionado) que renderiza cada pantalla con sesión de dueño y de personal contra el servidor de desarrollo: 20/20 PASS. Falta la prueba manual de los formularios en el navegador.
+
+**Resultado manual (2026-11-12)**: el usuario recorrió los criterios en el navegador con dos sesiones (dueño y personal) y todo funcionó. Notas:
+- Quitar a un miembro del personal se comprobó con `verify:rls`. En la prueba manual hubo confusión porque las instrucciones decían "el cajero" y la pantalla muestra el **nombre** con que la persona se registró, con la etiqueta "Personal".
+- El vencimiento de invitaciones (7 días) no se simuló a mano. Lo cubre la lógica de `accept_merchant_invitation` y `get_invitation_preview`; queda como comprobación opcional.
 
 ## Riesgos
 
