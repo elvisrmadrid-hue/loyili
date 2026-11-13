@@ -1,6 +1,6 @@
 # Módulo 03 — Programa de fidelización
 
-- **Estado**: implementado (2026-11-12), pendiente de prueba manual
+- **Estado**: verificado (2026-11-12)
 - **Fecha**: 2026-11-12
 
 ## Objetivo
@@ -124,18 +124,18 @@ Cambios en `src/modules/merchants/`:
 
 ## Criterios de aceptación
 
-- [ ] La migración se aplica con `npx supabase db push --remote` y crea `loyalty_programs` con RLS activado.
-- [ ] El dueño crea el programa con "X puntos por cada $Y"; queda activo y se ve en la portada.
-- [ ] La calculadora muestra el resultado correcto con redondeo hacia abajo (1 por cada $1.000: $2.700 → 2; $900 → 0).
-- [ ] En una moneda sin decimales (CLP) y en una con decimales (COP), el monto se guarda bien en unidades mínimas y se muestra igual que como se escribió.
-- [ ] El dueño edita la regla y el cambio se refleja al instante.
-- [ ] El dueño pausa y reanuda el programa; el estado se ve en la pantalla y en la portada.
-- [ ] El formulario rechaza valores fuera de rango, con decimales o vacíos, con mensajes claros (también si se salta la validación del navegador).
-- [ ] El personal ve la regla pero no puede crearla, editarla ni pausarla (ni desde la pantalla ni desde la API).
-- [ ] Cambiar la moneda en Ajustes pausa el programa automáticamente.
-- [ ] Nadie ve ni modifica el programa de un comercio al que no pertenece (comprobado con script).
-- [ ] `npm test` pasa (cálculo de puntos y conversión de montos).
-- [ ] `npm run lint`, `npm run typecheck`, `npm run build` y `npm run verify:rls` pasan.
+- [x] La migración se aplica con `npx supabase db push --remote` y crea `loyalty_programs` con RLS activado.
+- [x] El dueño crea el programa con "X puntos por cada $Y"; queda activo y se ve en la portada.
+- [x] La calculadora muestra el resultado correcto con redondeo hacia abajo (1 por cada $1.000: $2.700 → 2; $900 → 0).
+- [x] En una moneda sin decimales (CLP) y en una con decimales (COP), el monto se guarda bien en unidades mínimas y se muestra igual que como se escribió.
+- [x] El dueño edita la regla y el cambio se refleja al instante.
+- [x] El dueño pausa y reanuda el programa; el estado se ve en la pantalla y en la portada.
+- [x] El formulario rechaza valores fuera de rango, con decimales o vacíos, con mensajes claros (también si se salta la validación del navegador).
+- [x] El personal ve la regla pero no puede crearla, editarla ni pausarla (ni desde la pantalla ni desde la API).
+- [x] Cambiar la moneda en Ajustes pausa el programa automáticamente.
+- [x] Nadie ve ni modifica el programa de un comercio al que no pertenece (comprobado con script).
+- [x] `npm test` pasa (cálculo de puntos y conversión de montos).
+- [x] `npm run lint`, `npm run typecheck`, `npm run build` y `npm run verify:rls` pasan.
 
 ## Verificación
 
@@ -163,7 +163,7 @@ Cambios en `src/modules/merchants/`:
 
 Durante la verificación se corrigió un error del registro del servidor (lectura de la hora durante la preparación anticipada de páginas, presente desde el Módulo 1). Ver [ADR 0004](../architecture/adr/0004-logica-pura-y-pruebas-unitarias.md).
 
-Falta la prueba manual de los formularios (crear, editar, pausar y reanudar) en el navegador.
+**Resultado manual (2026-11-12)**: el usuario recorrió en el navegador la creación, la calculadora, la edición, la pausa y la reanudación, los errores de validación y la pausa al cambiar la moneda. También comprobó con una sesión de personal (ventana privada) que solo puede ver la regla. Todo correcto.
 
 ## Riesgos
 
