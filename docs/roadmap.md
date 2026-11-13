@@ -9,7 +9,7 @@ Estados: ⬜ pendiente · 🟦 en curso · 🟨 en verificación · ✅ completa
 | 0 | **Entorno y fundamentos** | Proyecto Next.js arranca; estructura, documentación y `CLAUDE.md` listos | ✅ |
 | 1 | **Conexión a Supabase y autenticación base** | Proyecto Supabase creado y conectado; registro, inicio y cierre de sesión funcionan; rutas protegidas | ✅ |
 | 2 | **Comercios** | Un usuario crea su comercio, sus sucursales e invita personal; RLS aísla cada comercio | ✅ |
-| 3 | **Programa de fidelización** | El comercio configura su regla de acumulación | ⬜ |
+| 3 | **Programa de fidelización** | El comercio configura su regla de acumulación | 🟦 |
 | 4 | **Clientes y membresías** | Un cliente queda asociado a un comercio; el comercio ve su lista de clientes | ⬜ |
 | 5 | **Ledger de puntos: acumulación** | El personal registra una compra y se acreditan los puntos correctos; saldo e historial correctos (con pruebas automáticas) | ⬜ |
 | 6 | **Recompensas y canje** | Catálogo de recompensas; canje que descuenta puntos y nunca deja saldo negativo | ⬜ |
@@ -41,3 +41,6 @@ Estados: ⬜ pendiente · 🟦 en curso · 🟨 en verificación · ✅ completa
 - 2026-11-10: especificación validada ([02-comercios.md](modules/02-comercios.md)). Moneda editable mientras no haya compras registradas.
 - 2026-11-10: implementado. Migración `create_merchants` aplicada (4 tablas con RLS, funciones `create_merchant`, `create_merchant_invitation`, `get_invitation_preview`, `accept_merchant_invitation`). Panel del comercio, sucursales, personal e invitaciones. Verificación automática: `verify:rls` 52/52. Pendiente: prueba manual del usuario.
 - 2026-11-12: prueba manual del usuario en el navegador (dueño y personal en dos sesiones) correcta. Módulo cerrado.
+
+### Módulo 3 — Programa de fidelización
+- 2026-11-12: especificación validada ([03-programa-fidelizacion.md](modules/03-programa-fidelizacion.md)). Regla por monto gastado, redondeo hacia abajo, sin monto mínimo; vencimiento pospuesto.

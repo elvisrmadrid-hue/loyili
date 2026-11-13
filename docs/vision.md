@@ -47,8 +47,8 @@ Los programas de fidelización tradicionales dependen de tarjetas físicas (sell
 Estas decisiones son de negocio y se resolverán con el usuario antes del módulo que las necesite:
 
 - [ ] País/es y moneda/s objetivo.
-- [ ] Forma de la regla de acumulación (¿puntos por monto gastado? ¿por visita? ¿ambas?) y cómo se redondea.
-- [ ] ¿Los puntos vencen? Si es así, ¿con qué política?
+- [x] Forma de la regla de acumulación → **por monto gastado** ("X puntos por cada Y"), **redondeando hacia abajo**, sin monto mínimo por ahora (decidido el 2026-11-12; ver [Módulo 3](modules/03-programa-fidelizacion.md)).
+- [ ] ¿Los puntos vencen? Si es así, ¿con qué política? (Pospuesto el 2026-11-12: por ahora no vencen.)
 - [ ] ¿El cliente se registra solo, o lo registra el comercio en caja (o ambas)?
 - [x] Método de inicio de sesión del cliente → **email + contraseña**, una sola cuenta para clientes y comercios (decidido el 2026-11-10; ver [Módulo 1](modules/01-supabase-auth.md)). Otros métodos podrán añadirse más adelante.
 - [ ] Modelo de negocio de Loyili (gratuito, suscripción por comercio, comisión).
