@@ -47,7 +47,7 @@ Ciclo de cada módulo:
 | Base de datos, Auth, Storage | Supabase (PostgreSQL gestionado) |
 | Acceso a Supabase desde Next.js | `@supabase/ssr` + `@supabase/supabase-js` (se instalan en el Módulo 1) |
 | Validación | Zod (se instala cuando se necesite) |
-| Pruebas | Vitest (se instala con el primer módulo con lógica de negocio) |
+| Pruebas | Vitest (`npm test`; pruebas unitarias de la lógica pura, ver ADR 0004) |
 | Gestor de paquetes | npm |
 | Node | 26 (ver `.nvmrc`) |
 
@@ -67,6 +67,7 @@ src/
                          queries.ts  (lecturas)
                          actions.ts  (Server Actions / escrituras)
                          types.ts
+                         rules.ts    (lógica pura, sin servidor; importable desde el navegador)
   lib/supabase/        Clientes de Supabase (browser, server, proxy)
   components/          Componentes de UI reutilizables
   proxy.ts             (Módulo 1) refresco de sesión y redirecciones
@@ -111,4 +112,6 @@ npm run dev        # servidor de desarrollo en http://localhost:3000
 npm run build      # build de producción (verifica que todo compila)
 npm run lint       # ESLint
 npm run typecheck  # verificación de tipos TypeScript
+npm test           # pruebas unitarias (Vitest)
+npm run verify:rls # comprobación de RLS contra el proyecto de desarrollo
 ```

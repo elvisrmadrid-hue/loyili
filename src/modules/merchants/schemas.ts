@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CURRENCY_CODES } from "./currencies";
+import { CURRENCY_CODES } from "@/lib/currencies";
 
 const merchantName = z
   .string({ error: "Ingresa el nombre del comercio." })

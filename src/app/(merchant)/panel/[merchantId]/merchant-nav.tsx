@@ -15,6 +15,7 @@ export function MerchantNav({ merchantId, isOwner }: MerchantNavProps) {
 
   const items = [
     { href: base, label: "Inicio" },
+    { href: `${base}/programa`, label: "Programa" },
     { href: `${base}/sucursales`, label: "Sucursales" },
     ...(isOwner
       ? [

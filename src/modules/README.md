@@ -11,8 +11,11 @@ Estructura de cada módulo (se crea cuando se implementa):
   queries.ts    # lecturas de la base de datos
   actions.ts    # Server Actions: escrituras ("use server")
   types.ts      # tipos TypeScript del módulo
+  rules.ts      # (opcional) lógica pura, sin servidor ni base de datos; probada con Vitest
 ```
 
-Módulos previstos: `auth`, `merchants`, `programs`, `customers`, `ledger`, `rewards`, `redemptions`, `identification`.
+Módulos previstos: `auth`, `merchants`, `loyalty` (programa de fidelización), `customers`, `ledger`, `rewards`, `redemptions`, `identification`.
 
 Regla: un módulo no importa archivos internos de otro; solo lo que exporta su `index.ts`.
+
+Excepción para componentes de cliente (`"use client"`): no pueden importar `index.ts`, porque arrastra código de servidor. Pueden importar `rules.ts`, que es la parte pública y segura para el navegador.

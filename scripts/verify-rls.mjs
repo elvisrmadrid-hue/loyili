@@ -268,6 +268,119 @@ let token;
   check(ownerProfile.data?.length === 0, "staff cannot read the owner's profile", rowsOf(ownerProfile));
 }
 
+// ---------------------------------------------------------------------------
+// Module 3: loyalty programs (runs while C is still staff of merchant 1)
+// ---------------------------------------------------------------------------
+console.log("\n-- Module 3: loyalty programs --");
+const programOf = (client, merchantId) =>
+  client.from("loyalty_programs").select("points_per_block, block_amount_minor, is_active").eq("merchant_id", merchantId);
+const rule = (points, blockMinor) => ({ points_per_block: points, block_amount_minor: blockMinor });
+
+// 13. Who can create a program
+{
+  const anonRead = await newClient().from("loyalty_programs").select("merchant_id");
+  check(Boolean(anonRead.error) || anonRead.data.length === 0, "anon cannot read programs", rowsOf(anonRead));
+
+  const byStaff = await c.client.from("loyalty_programs").insert({ merchant_id: m1Id, ...rule(1, 100000) });
+  check(Boolean(byStaff.error), "staff cannot create the program", byStaff.error?.code ?? "allowed!");
+
+  const byOther = await b.client.from("loyalty_programs").insert({ merchant_id: m1Id, ...rule(1, 100000) });
+  check(Boolean(byOther.error), "another owner cannot create a program for A's merchant", byOther.error?.code ?? "allowed!");
+
+  for (const [label, values] of [
+    ["0 points", rule(0, 100000)],
+    ["1001 points", rule(1001, 100000)],
+    ["a zero block amount", rule(1, 0)],
+    ["a negative block amount", rule(1, -100)],
+  ]) {
+    const bad = await a.client.from("loyalty_programs").insert({ merchant_id: m1Id, ...values });
+    check(bad.error?.code === "23514", `database rejects ${label}`, bad.error?.code ?? "allowed!");
+  }
+
+  const created = await a.client
+    .from("loyalty_programs")
+    .insert({ merchant_id: m1Id, ...rule(1, 100000) })
+    .select("is_active");
+  check(created.data?.[0]?.is_active === true, "owner creates the program, active by default", rowsOf(created));
+
+  const dup = await a.client.from("loyalty_programs").insert({ merchant_id: m1Id, ...rule(2, 100000) });
+  check(dup.error?.code === "23505", "a merchant cannot have two programs", dup.error?.code ?? "allowed!");
+
+  const own = await b.client.from("loyalty_programs").insert({ merchant_id: m2Id, ...rule(5, 1000) }).select("merchant_id");
+  check(own.data?.length === 1, "each owner creates their own merchant's program", rowsOf(own));
+}
+
+// 14. Reading and editing
+{
+  const staffRead = await programOf(c.client, m1Id);
+  check(staffRead.data?.[0]?.points_per_block === 1, "staff can read the program", rowsOf(staffRead));
+
+  const staffUpd = await c.client.from("loyalty_programs").update(rule(9, 100)).eq("merchant_id", m1Id).select();
+  check(Boolean(staffUpd.error) || staffUpd.data.length === 0, "staff cannot change the rule", rowsOf(staffUpd));
+
+  const staffPause = await c.client.from("loyalty_programs").update({ is_active: false }).eq("merchant_id", m1Id).select();
+  check(Boolean(staffPause.error) || staffPause.data.length === 0, "staff cannot pause the program", rowsOf(staffPause));
+
+  const otherRead = await programOf(b.client, m1Id);
+  check(otherRead.data?.length === 0, "another owner cannot read A's program", rowsOf(otherRead));
+
+  const otherUpd = await b.client.from("loyalty_programs").update(rule(9, 100)).eq("merchant_id", m1Id).select();
+  check(Boolean(otherUpd.error) || otherUpd.data.length === 0, "another owner cannot change A's program", rowsOf(otherUpd));
+
+  const aReadsB = await programOf(a.client, m2Id);
+  check(aReadsB.data?.length === 0, "A cannot read B's program either", rowsOf(aReadsB));
+
+  const ownUpd = await a.client.from("loyalty_programs").update(rule(3, 500000)).eq("merchant_id", m1Id).select("points_per_block, block_amount_minor");
+  check(
+    ownUpd.data?.[0]?.points_per_block === 3 && Number(ownUpd.data?.[0]?.block_amount_minor) === 500000,
+    "owner can change the rule",
+    rowsOf(ownUpd),
+  );
+
+  const moveIt = await a.client.from("loyalty_programs").update({ merchant_id: m2Id }).eq("merchant_id", m1Id).select();
+  check(Boolean(moveIt.error), "the program cannot be moved to another merchant", moveIt.error?.code ?? "allowed!");
+
+  const pause = await a.client.from("loyalty_programs").update({ is_active: false }).eq("merchant_id", m1Id).select("is_active");
+  check(pause.data?.[0]?.is_active === false, "owner can pause the program", rowsOf(pause));
+
+  const resume = await a.client.from("loyalty_programs").update({ is_active: true }).eq("merchant_id", m1Id).select("is_active");
+  check(resume.data?.[0]?.is_active === true, "owner can resume the program", rowsOf(resume));
+
+  const del = await a.client.from("loyalty_programs").delete().eq("merchant_id", m1Id).select();
+  check(Boolean(del.error) || del.data.length === 0, "nobody can delete a program (pause instead)", rowsOf(del));
+}
+
+// 15. Changing the currency pauses the program
+{
+  const rename = await a.client.from("merchants").update({ name: "Café de A renombrado" }).eq("id", m1Id).select("id");
+  const afterRename = await programOf(a.client, m1Id);
+  check(
+    rename.data?.length === 1 && afterRename.data?.[0]?.is_active === true,
+    "renaming the merchant keeps the program active",
+    rowsOf(afterRename),
+  );
+
+  const sameCurrency = await a.client.from("merchants").update({ currency: "MXN" }).eq("id", m1Id).select("id");
+  const afterSame = await programOf(a.client, m1Id);
+  check(
+    sameCurrency.data?.length === 1 && afterSame.data?.[0]?.is_active === true,
+    "saving the same currency keeps the program active",
+    rowsOf(afterSame),
+  );
+
+  const change = await a.client.from("merchants").update({ currency: "COP" }).eq("id", m1Id).select("id");
+  const afterChange = await programOf(a.client, m1Id);
+  check(
+    change.data?.length === 1 && afterChange.data?.[0]?.is_active === false,
+    "changing the currency pauses the program",
+    rowsOf(afterChange),
+  );
+  check(afterChange.data?.[0]?.points_per_block === 3, "the rule is kept when paused", JSON.stringify(afterChange.data?.[0]));
+
+  const bProgram = await programOf(b.client, m2Id);
+  check(bProgram.data?.[0]?.is_active === true, "other merchants' programs are not affected", rowsOf(bProgram));
+}
+
 // 12. Owner managing the team
 {
   const team = await a.client.from("profiles").select("full_name").eq("id", c.id);
@@ -291,7 +404,6 @@ let token;
   const delMerchant = await a.client.from("merchants").delete().eq("id", m1Id).select();
   check(Boolean(delMerchant.error) || delMerchant.data.length === 0, "nobody can delete a merchant (out of scope)", rowsOf(delMerchant));
 }
-void m2Id;
 
 console.log(failures === 0 ? "\nAll RLS checks passed." : `\n${failures} check(s) FAILED.`);
 process.exit(failures === 0 ? 0 : 1);

@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { currencyLabel, getBranches } from "@/modules/merchants";
+import { describeRule, getLoyaltyProgram } from "@/modules/loyalty";
 import { Loading } from "@/components/ui/loading";
 import { card, mutedText } from "@/components/ui/styles";
 import { loadMembership } from "./load-membership";
+import { ProgramStatus } from "./programa/program-status";
 
 export const metadata: Metadata = { title: "Mi comercio" };
 
@@ -20,7 +22,7 @@ export default function MerchantHomePage({ params }: PageProps<"/panel/[merchant
 
 async function MerchantHome({ merchantId }: { merchantId: string }) {
   const membership = await loadMembership(merchantId);
-  const branches = await getBranches(merchantId);
+  const [branches, program] = await Promise.all([getBranches(merchantId), getLoyaltyProgram(merchantId)]);
   const isOwner = membership.role === "owner";
   const base = `/panel/${merchantId}`;
 
@@ -43,6 +45,20 @@ async function MerchantHome({ merchantId }: { merchantId: string }) {
         </div>
       </dl>
 
+      <Link href={`${base}/programa`} className={`${card} flex flex-col gap-1 hover:border-foreground`}>
+        <div className="flex items-center justify-between gap-3">
+          <p className="font-medium">Programa de puntos</p>
+          {program && <ProgramStatus active={program.isActive} />}
+        </div>
+        <p className={mutedText}>
+          {program
+            ? `Tus clientes ganan ${describeRule(program, membership.currency)} gastados.`
+            : isOwner
+              ? "Configura tu programa: define cuántos puntos gana un cliente según lo que gasta."
+              : "El dueño aún no ha configurado el programa de puntos."}
+        </p>
+      </Link>
+
       {isOwner ? (
         <div className="grid gap-3 sm:grid-cols-2">
           <Link href={`${base}/sucursales`} className={`${card} hover:border-foreground`}>
@@ -62,7 +78,7 @@ async function MerchantHome({ merchantId }: { merchantId: string }) {
       )}
 
       <p className={mutedText}>
-        Próximamente: programa de puntos, clientes y recompensas.
+        Próximamente: clientes, registro de compras y recompensas.
       </p>
     </>
   );

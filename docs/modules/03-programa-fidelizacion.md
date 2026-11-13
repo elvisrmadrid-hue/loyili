@@ -1,6 +1,6 @@
 # Módulo 03 — Programa de fidelización
 
-- **Estado**: validado (2026-11-12)
+- **Estado**: implementado (2026-11-12), pendiente de prueba manual
 - **Fecha**: 2026-11-12
 
 ## Objetivo
@@ -154,6 +154,16 @@ Cambios en `src/modules/merchants/`:
   - la base de datos rechaza valores fuera de rango;
   - cambiar la moneda pausa el programa.
 - **Manual en el navegador**: crear el programa, probar la calculadora, editar, pausar y reanudar como dueño; comprobar con la sesión de personal que solo puede ver; cambiar la moneda y ver que el programa queda pausado.
+
+**Resultado automático (2026-11-12)**:
+- lint, typecheck y build sin errores;
+- `npm test` 15/15 (cálculo de puntos, conversión y formato de montos);
+- `verify:rls` 79/79 (27 comprobaciones nuevas del programa);
+- pruebas de humo (scripts temporales, no versionados) que renderizan las pantallas con sesión de dueño, personal y persona ajena: Módulo 3 10/10, Módulo 2 20/20.
+
+Durante la verificación se corrigió un error del registro del servidor (lectura de la hora durante la preparación anticipada de páginas, presente desde el Módulo 1). Ver [ADR 0004](../architecture/adr/0004-logica-pura-y-pruebas-unitarias.md).
+
+Falta la prueba manual de los formularios (crear, editar, pausar y reanudar) en el navegador.
 
 ## Riesgos
 

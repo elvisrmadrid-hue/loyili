@@ -29,7 +29,7 @@ async function Settings({ merchantId }: { merchantId: string }) {
           action={updateMerchant.bind(null, merchantId)}
           currencyOptions={CURRENCY_OPTIONS.map((c) => ({ value: c.code, label: c.label }))}
           defaultValues={{ name: membership.name, currency: membership.currency }}
-          currencyHint="Puedes cambiarla mientras tu comercio no tenga compras registradas."
+          currencyHint="Puedes cambiarla mientras tu comercio no tenga compras registradas. Si la cambias, tu programa de puntos se pausará para que revises la regla."
           submitLabel="Guardar cambios"
           pendingLabel="Guardando…"
         />

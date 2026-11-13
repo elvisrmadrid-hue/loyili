@@ -21,7 +21,7 @@ export {
   getPendingInvitations,
   getTeam,
 } from "./queries";
-export { CURRENCY_OPTIONS, currencyLabel } from "./currencies";
+export { CURRENCY_OPTIONS, currencyLabel } from "@/lib/currencies";
 export type {
   Branch,
   InvitationLinkState,
