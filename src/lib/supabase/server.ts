@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 import { getSupabasePublicEnv } from "./env";
 
 /**
@@ -12,6 +13,10 @@ export async function createClient() {
   // Read cookies first: it marks the caller as request-time (dynamic) code,
   // so it is never executed while prerendering at build time.
   const cookieStore = await cookies();
+  // Supabase compares Date.now() with the session's expiry. Next.js may render
+  // session-specific UI ahead of time (App Shell), where reading the clock is an
+  // error, so mark everything that queries Supabase as request-time only.
+  await connection();
   const { url, publishableKey } = getSupabasePublicEnv();
 
   return createServerClient(url, publishableKey, {
