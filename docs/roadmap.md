@@ -10,7 +10,7 @@ Estados: ⬜ pendiente · 🟦 en curso · 🟨 en verificación · ✅ completa
 | 1 | **Conexión a Supabase y autenticación base** | Proyecto Supabase creado y conectado; registro, inicio y cierre de sesión funcionan; rutas protegidas | ✅ |
 | 2 | **Comercios** | Un usuario crea su comercio, sus sucursales e invita personal; RLS aísla cada comercio | ✅ |
 | 3 | **Programa de fidelización** | El comercio configura su regla de acumulación | ✅ |
-| 4 | **Clientes y membresías** | Un cliente queda asociado a un comercio; el comercio ve su lista de clientes | ⬜ |
+| 4 | **Clientes y membresías** | Un cliente queda asociado a un comercio; el comercio ve su lista de clientes | 🟦 |
 | 5 | **Ledger de puntos: acumulación** | El personal registra una compra y se acreditan los puntos correctos; saldo e historial correctos (con pruebas automáticas) | ⬜ |
 | 6 | **Recompensas y canje** | Catálogo de recompensas; canje que descuenta puntos y nunca deja saldo negativo | ⬜ |
 | 7 | **Identificación por QR** | El cliente muestra su QR; el personal lo escanea para acreditar o canjear | ⬜ |
@@ -46,3 +46,6 @@ Estados: ⬜ pendiente · 🟦 en curso · 🟨 en verificación · ✅ completa
 - 2026-11-12: especificación validada ([03-programa-fidelizacion.md](modules/03-programa-fidelizacion.md)). Regla por monto gastado, redondeo hacia abajo, sin monto mínimo; vencimiento pospuesto.
 - 2026-11-12: implementado. Migración `create_loyalty_programs` aplicada (tabla con RLS y pausa automática al cambiar la moneda). Pantalla "Programa" con calculadora de ejemplo, tarjeta en la portada y aviso en Ajustes. Vitest instalado (`npm test` 15/15). `verify:rls` 79/79. Decisiones en [ADR 0004](architecture/adr/0004-logica-pura-y-pruebas-unitarias.md). Pendiente: prueba manual del usuario.
 - 2026-11-12: prueba manual del usuario correcta (dueño y personal). Módulo cerrado.
+
+### Módulo 4 — Clientes y membresías
+- 2026-11-16: especificación validada ([04-clientes.md](modules/04-clientes.md)). Unión por enlace o QR con código corto; el comercio solo ve nombre y fecha; sin salida del programa por ahora.
