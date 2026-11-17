@@ -11,3 +11,4 @@ Nombre de archivo: `NN-nombre.md` (por ejemplo `01-supabase-auth.md`), con el mi
 | 2 | Comercios | [02-comercios.md](02-comercios.md) |
 | 3 | Programa de fidelización | [03-programa-fidelizacion.md](03-programa-fidelizacion.md) |
 | 4 | Clientes y membresías | [04-clientes.md](04-clientes.md) |
+| 5 | Ledger de puntos: acumulación | [05-ledger-acumulacion.md](05-ledger-acumulacion.md) |
