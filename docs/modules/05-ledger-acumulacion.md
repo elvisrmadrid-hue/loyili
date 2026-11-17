@@ -1,6 +1,6 @@
 # Módulo 05 — Ledger de puntos: acumulación
 
-- **Estado**: implementado (2026-11-16), pendiente de prueba manual
+- **Estado**: verificado (2026-11-17)
 - **Fecha**: 2026-11-16
 
 ## Objetivo
@@ -143,19 +143,19 @@ Cambios en otros módulos:
 
 ## Criterios de aceptación
 
-- [ ] La migración se aplica con `npx supabase db push --remote` y crea `point_transactions` con RLS activado.
-- [ ] El cajero busca a un cliente por nombre, escribe el monto, ve los puntos que recibirá y registra la compra; el saldo sube exactamente esos puntos.
-- [ ] El cálculo respeta la regla con redondeo hacia abajo, y una compra que no llega a un bloque queda registrada con 0 puntos.
-- [ ] Los montos se leen en el formato del país (con centavos donde los hay) y los ambiguos o inválidos se rechazan con un mensaje claro.
-- [ ] Si el comercio tiene sucursales hay que elegir una; si no, no se pide.
-- [ ] Con el programa pausado o sin configurar no se puede registrar ninguna compra (ni desde la pantalla ni desde la API).
-- [ ] Enviar dos veces la misma compra (misma clave) la registra una sola vez.
-- [ ] El dueño anula una compra con motivo; el saldo baja esos puntos y el historial muestra la compra y su anulación. No se puede anular dos veces ni sin motivo. El personal no puede anular.
-- [ ] Nadie puede modificar ni borrar movimientos, ni cambiar el saldo directamente (comprobado con script).
-- [ ] El saldo de cada membresía coincide con la suma de sus movimientos (comprobado con script).
-- [ ] El cliente ve su saldo y sus movimientos; no ve los de otros clientes. Un comercio no ve los movimientos de otro.
-- [ ] La moneda no se puede cambiar después de la primera compra, y una sucursal con compras no se puede eliminar; en ambos casos con un mensaje claro.
-- [ ] `npm test`, `npm run lint`, `npm run typecheck`, `npm run build` y `npm run verify:rls` pasan.
+- [x] La migración se aplica con `npx supabase db push --remote` y crea `point_transactions` con RLS activado.
+- [x] El cajero busca a un cliente por nombre, escribe el monto, ve los puntos que recibirá y registra la compra; el saldo sube exactamente esos puntos.
+- [x] El cálculo respeta la regla con redondeo hacia abajo, y una compra que no llega a un bloque queda registrada con 0 puntos.
+- [x] Los montos se leen en el formato del país (con centavos donde los hay) y los ambiguos o inválidos se rechazan con un mensaje claro.
+- [x] Si el comercio tiene sucursales hay que elegir una; si no, no se pide.
+- [x] Con el programa pausado o sin configurar no se puede registrar ninguna compra (ni desde la pantalla ni desde la API).
+- [x] Enviar dos veces la misma compra (misma clave) la registra una sola vez.
+- [x] El dueño anula una compra con motivo; el saldo baja esos puntos y el historial muestra la compra y su anulación. No se puede anular dos veces ni sin motivo. El personal no puede anular.
+- [x] Nadie puede modificar ni borrar movimientos, ni cambiar el saldo directamente (comprobado con script).
+- [x] El saldo de cada membresía coincide con la suma de sus movimientos (comprobado con script).
+- [x] El cliente ve su saldo y sus movimientos; no ve los de otros clientes. Un comercio no ve los movimientos de otro.
+- [x] La moneda no se puede cambiar después de la primera compra, y una sucursal con compras no se puede eliminar; en ambos casos con un mensaje claro.
+- [x] `npm test`, `npm run lint`, `npm run typecheck`, `npm run build` y `npm run verify:rls` pasan.
 
 ## Verificación
 
@@ -186,9 +186,11 @@ Cambios en otros módulos:
 
 Decisiones técnicas en el [ADR 0005](../architecture/adr/0005-saldo-materializado-y-forma-del-ledger.md).
 
-**Problema conocido (no bloqueante)**: si un formulario se envía **sin JavaScript** y la acción devuelve un error de validación, el registro del servidor muestra un `InvariantError` interno de Next.js ("cookies object does not match"). La respuesta al usuario es correcta. Ya ocurría en el Módulo 2 (formulario de Ajustes), no lo causa `connection()` y no aparece en los envíos correctos. Queda por confirmar que no aparece en el uso normal con JavaScript (se revisará el registro tras la prueba manual).
+**Problema conocido (no bloqueante)**: si un formulario se envía **sin JavaScript** y la acción devuelve un error de validación, el registro del servidor muestra un `InvariantError` interno de Next.js ("cookies object does not match"). La respuesta al usuario es correcta. Ya ocurría en el Módulo 2 (formulario de Ajustes), no lo causa `connection()` y no aparece en los envíos correctos. Confirmado tras la prueba manual: en el uso normal con JavaScript no aparece. El registro no mostró ningún error durante la prueba del usuario.
 
-Falta la prueba manual en el navegador.
+**Resultado manual (2026-11-17)**: el usuario recorrió en el navegador el registro de compras, el saldo y el historial, la anulación con motivo, los bloqueos de moneda y sucursal, y la billetera del cliente. Todo correcto.
+
+Aclaración sobre los montos: el usuario observó que "25.5" se acepta como 25,50. Es el comportamiento previsto en las monedas donde el punto separa los centavos (USD, MXN, PEN, DOP, GTQ, HNL, NIO). Ahí no hay ambigüedad, y la vista previa muestra el monto exacto antes de registrar. En las monedas donde el punto separa los miles (COP, CLP, ARS, etc.), "25.5" se rechaza por ambiguo. Se decidió mantenerlo así (2026-11-17).
 
 ## Riesgos
 
