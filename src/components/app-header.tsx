@@ -9,7 +9,7 @@ type AppHeaderProps = {
 /** Top bar of the private areas (wallet and merchant panel). */
 export function AppHeader({ userName, signOutAction }: AppHeaderProps) {
   return (
-    <header className="flex items-center justify-between gap-4 border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
+    <header className="print:hidden flex items-center justify-between gap-4 border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
       <Link href="/" className="text-lg font-semibold tracking-tight">
         Loyili
       </Link>

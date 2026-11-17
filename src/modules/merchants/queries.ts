@@ -15,7 +15,7 @@ import type {
 // Shapes returned by Supabase for the selects below (no generated DB types yet).
 type MembershipRow = {
   role: MerchantRole;
-  merchant: { id: string; name: string; currency: string };
+  merchant: { id: string; name: string; currency: string; join_code: string };
 };
 type TeamRow = {
   user_id: string;
@@ -24,12 +24,13 @@ type TeamRow = {
   profile: { full_name: string } | null;
 };
 
-const MEMBERSHIP_SELECT = "role, merchant:merchants!inner(id, name, currency)";
+const MEMBERSHIP_SELECT = "role, merchant:merchants!inner(id, name, currency, join_code)";
 
 const toMembership = (row: MembershipRow): MerchantMembership => ({
   id: row.merchant.id,
   name: row.merchant.name,
   currency: row.merchant.currency,
+  joinCode: row.merchant.join_code,
   role: row.role,
 });
 

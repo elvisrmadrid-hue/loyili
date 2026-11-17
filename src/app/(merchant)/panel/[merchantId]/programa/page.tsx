@@ -12,7 +12,7 @@ import { Loading } from "@/components/ui/loading";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { card, mutedText } from "@/components/ui/styles";
 import { loadMembership } from "../load-membership";
-import { ProgramStatus } from "./program-status";
+import { ProgramStatus } from "@/components/ui/program-status";
 import { ProgramForm } from "./program-form";
 
 export const metadata: Metadata = { title: "Programa de puntos" };

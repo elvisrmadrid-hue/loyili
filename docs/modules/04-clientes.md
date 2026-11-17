@@ -1,6 +1,6 @@
 # Módulo 04 — Clientes y membresías
 
-- **Estado**: validado (2026-11-16)
+- **Estado**: implementado (2026-11-16), pendiente de prueba manual
 - **Fecha**: 2026-11-13
 
 ## Objetivo
@@ -159,6 +159,14 @@ Cambios en otros módulos:
   - ventana normal como dueño (enlace, QR, cartel, lista de clientes);
   - ventana privada como cliente nuevo (abrir el enlace sin sesión, registrarse, unirse, ver la billetera);
   - escanear el QR con el teléfono.
+
+**Resultado automático (2026-11-16)**:
+- lint, typecheck y build sin errores;
+- `npm test` 20/20 (5 nuevas del código de unión);
+- `verify:rls` 116/116 (37 comprobaciones nuevas de clientes);
+- prueba de humo (script temporal, no versionado) contra el servidor de desarrollo, sin sesión y con sesión de dueño, personal y cliente: 16/16. Sin regresiones en las de los Módulos 2 (20/20) y 3 (10/10), y sin errores en el registro del servidor.
+
+Falta la prueba manual en el navegador: el registro desde el enlace, el botón "Unirme", el cartel impreso y el QR con el teléfono.
 
 ## Riesgos
 

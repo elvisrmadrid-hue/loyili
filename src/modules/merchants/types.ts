@@ -4,6 +4,8 @@ export type Merchant = {
   id: string;
   name: string;
   currency: string;
+  /** Public code customers use to join (/unirse/<code>). */
+  joinCode: string;
 };
 
 /** A merchant seen by one of its members, with that member's role. */

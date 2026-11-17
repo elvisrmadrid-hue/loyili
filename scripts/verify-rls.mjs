@@ -381,6 +381,146 @@ const rule = (points, blockMinor) => ({ points_per_block: points, block_amount_m
   check(bProgram.data?.[0]?.is_active === true, "other merchants' programs are not affected", rowsOf(bProgram));
 }
 
+// ---------------------------------------------------------------------------
+// Module 4: customers and memberships (runs while C is still staff of merchant 1)
+// State here: merchant 1 (owner A, staff C) has its program PAUSED; merchant 2 (owner B) is active.
+// ---------------------------------------------------------------------------
+console.log("\n-- Module 4: customers --");
+const d = await signUp("d", "Cliente D");
+console.log(`info  created test user ${d.email}`);
+const joinCodeOf = async (client, merchantId) =>
+  (await client.from("merchants").select("join_code").eq("id", merchantId)).data?.[0]?.join_code;
+const code1 = await joinCodeOf(a.client, m1Id);
+const code2 = await joinCodeOf(b.client, m2Id);
+
+// 16. Join codes and the public preview
+{
+  check(/^[A-HJ-NP-Z2-9]{6}$/.test(code1 ?? "") && /^[A-HJ-NP-Z2-9]{6}$/.test(code2 ?? ""), "merchants get a 6-char join code", `${code1} ${code2}`);
+  check(code1 !== code2, "join codes are different per merchant", `${code1} ${code2}`);
+
+  const anonPreview = await newClient().rpc("get_join_preview", { p_code: code2 });
+  const row = anonPreview.data?.[0];
+  check(
+    row?.merchant_name === "Tienda de B" && row?.program_status === "active" && row?.viewer_status === "anonymous",
+    "anyone (signed out) can preview a merchant by its code",
+    anonPreview.error?.message ?? JSON.stringify(row),
+  );
+  check(Object.keys(row ?? {}).length === 6 && !("id" in (row ?? {})), "the preview exposes only name, currency, rule and status", Object.keys(row ?? {}).join(","));
+
+  const lower = await newClient().rpc("get_join_preview", { p_code: ` ${code2.toLowerCase()} ` });
+  check(lower.data?.length === 1, "codes are accepted in lowercase and with spaces", rowsOf(lower));
+
+  const unknown = await newClient().rpc("get_join_preview", { p_code: "ZZZZZZ" === code1 || "ZZZZZZ" === code2 ? "YYYYYY" : "ZZZZZZ" });
+  check(unknown.data?.length === 0, "an unknown code previews nothing", rowsOf(unknown));
+
+  const paused = await d.client.rpc("get_join_preview", { p_code: code1 });
+  check(paused.data?.[0]?.program_status === "paused" && paused.data?.[0]?.viewer_status === "none", "preview reports a paused program", JSON.stringify(paused.data?.[0]));
+
+  const anonJoin = await newClient().rpc("join_merchant", { p_code: code2 });
+  check(Boolean(anonJoin.error), "signed-out visitors cannot join", anonJoin.error?.code ?? "allowed!");
+
+  const changeCode = await a.client.from("merchants").update({ join_code: "ABCDEF" }).eq("id", m1Id).select();
+  check(Boolean(changeCode.error), "the owner cannot change the join code (out of scope)", changeCode.error?.code ?? "allowed!");
+}
+
+// 17. Joining
+{
+  const joined = await d.client.rpc("join_merchant", { p_code: code2 });
+  check(joined.data === m2Id, "a customer joins an active program", joined.error?.message);
+
+  const again = await d.client.rpc("join_merchant", { p_code: code2.toLowerCase() });
+  const mine = await d.client.from("memberships").select("id").eq("merchant_id", m2Id);
+  check(again.data === m2Id && mine.data?.length === 1, "joining twice does not duplicate the membership", rowsOf(mine));
+
+  const asCustomer = await d.client.rpc("get_join_preview", { p_code: code2 });
+  check(asCustomer.data?.[0]?.viewer_status === "customer", "preview recognizes an existing customer", JSON.stringify(asCustomer.data?.[0]));
+
+  const pausedJoin = await d.client.rpc("join_merchant", { p_code: code1 });
+  check(pausedJoin.error?.message === "program_not_active", "nobody can join a paused program", pausedJoin.error?.message ?? "allowed!");
+
+  const ownerJoin = await b.client.rpc("join_merchant", { p_code: code2 });
+  check(ownerJoin.error?.message === "merchant_member", "an owner cannot join their own merchant", ownerJoin.error?.message ?? "allowed!");
+
+  const memberPreview = await b.client.rpc("get_join_preview", { p_code: code2 });
+  check(memberPreview.data?.[0]?.viewer_status === "member", "preview recognizes owner/staff", JSON.stringify(memberPreview.data?.[0]));
+
+  await a.client.from("loyalty_programs").update({ is_active: true }).eq("merchant_id", m1Id);
+
+  const staffJoin = await c.client.rpc("join_merchant", { p_code: code1 });
+  check(staffJoin.error?.message === "merchant_member", "staff cannot join the merchant they work at", staffJoin.error?.message ?? "allowed!");
+
+  const otherMerchant = await a.client.rpc("join_merchant", { p_code: code2 });
+  check(otherMerchant.data === m2Id, "an owner can be a customer of another merchant", otherMerchant.error?.message);
+
+  const second = await d.client.rpc("join_merchant", { p_code: code1 });
+  check(second.data === m1Id, "a customer can join several merchants", second.error?.message);
+
+  const badCode = await d.client.rpc("join_merchant", { p_code: "ZZZZZZ" === code1 || "ZZZZZZ" === code2 ? "YYYYYY" : "ZZZZZZ" });
+  check(badCode.error?.message === "join_code_not_found", "an unknown code cannot be joined", badCode.error?.message ?? "allowed!");
+
+  const direct = await c.client.from("memberships").insert({ merchant_id: m2Id, customer_id: c.id });
+  check(Boolean(direct.error), "memberships cannot be inserted directly", direct.error?.code ?? "allowed!");
+
+  const leave = await d.client.from("memberships").delete().eq("customer_id", d.id).select();
+  check(Boolean(leave.error) || leave.data.length === 0, "customers cannot delete memberships (leaving is out of scope)", rowsOf(leave));
+
+  const kick = await b.client.from("memberships").delete().eq("merchant_id", m2Id).select();
+  check(Boolean(kick.error) || kick.data.length === 0, "owners cannot delete memberships either", rowsOf(kick));
+}
+
+// 18. Who sees what
+{
+  const wallet = await d.client.from("memberships").select("merchant_id");
+  check(wallet.data?.length === 2, "a customer sees only their own memberships", rowsOf(wallet));
+
+  const merchants = await d.client.from("merchants").select("name").in("id", [m1Id, m2Id]);
+  check(merchants.data?.length === 2, "a customer can read the name of their merchants", rowsOf(merchants));
+
+  const programs = await d.client.from("loyalty_programs").select("points_per_block").in("merchant_id", [m1Id, m2Id]);
+  check(programs.data?.length === 2, "a customer can read the rule of their merchants", rowsOf(programs));
+
+  const branches = await d.client.from("branches").select("id").eq("merchant_id", m1Id);
+  check(branches.data?.length === 0, "a customer cannot read branches", rowsOf(branches));
+
+  const team = await d.client.from("merchant_members").select("user_id").eq("merchant_id", m1Id);
+  check(team.data?.length === 0, "a customer cannot read the team", rowsOf(team));
+
+  const invitations = await d.client.from("merchant_invitations").select("id").eq("merchant_id", m1Id);
+  check(invitations.data?.length === 0, "a customer cannot read invitations", rowsOf(invitations));
+
+  const others = await d.client.from("memberships").select("customer_id").eq("merchant_id", m2Id);
+  check(others.data?.length === 1 && others.data[0].customer_id === d.id, "a customer cannot see other customers", rowsOf(others));
+
+  const otherProfile = await d.client.from("profiles").select("id").eq("id", a.id);
+  check(otherProfile.data?.length === 0, "a customer cannot read other customers' profiles", rowsOf(otherProfile));
+
+  const updMerchant = await d.client.from("merchants").update({ name: "Hackeado" }).eq("id", m2Id).select();
+  check(Boolean(updMerchant.error) || updMerchant.data.length === 0, "a customer cannot edit the merchant", rowsOf(updMerchant));
+
+  const updProgram = await d.client.from("loyalty_programs").update({ points_per_block: 1000 }).eq("merchant_id", m2Id).select();
+  check(Boolean(updProgram.error) || updProgram.data.length === 0, "a customer cannot edit the program", rowsOf(updProgram));
+
+  const ownerList = await b.client.from("memberships").select("customer_id").eq("merchant_id", m2Id);
+  check(ownerList.data?.length === 2, "the owner sees all their customers", rowsOf(ownerList));
+
+  const ownerNames = await b.client.from("profiles").select("full_name").in("id", [d.id, a.id]);
+  check(ownerNames.data?.length === 2, "the owner can read their customers' names", rowsOf(ownerNames));
+
+  const staffList = await c.client.from("memberships").select("customer_id").eq("merchant_id", m1Id);
+  const staffName = await c.client.from("profiles").select("full_name").eq("id", d.id);
+  check(
+    staffList.data?.length === 1 && staffName.data?.[0]?.full_name === "Cliente D",
+    "staff see their merchant's customers and their names",
+    `${rowsOf(staffList)}, ${rowsOf(staffName)}`,
+  );
+
+  const crossList = await b.client.from("memberships").select("id").eq("merchant_id", m1Id);
+  check(crossList.data?.length === 0, "a merchant cannot see another merchant's customers", rowsOf(crossList));
+
+  const staffOther = await c.client.from("memberships").select("id").eq("merchant_id", m2Id);
+  check(staffOther.data?.length === 0, "staff cannot see customers of other merchants", rowsOf(staffOther));
+}
+
 // 12. Owner managing the team
 {
   const team = await a.client.from("profiles").select("full_name").eq("id", c.id);

@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { currencyLabel, getBranches } from "@/modules/merchants";
+import { getCustomerCount } from "@/modules/customers";
 import { describeRule, getLoyaltyProgram } from "@/modules/loyalty";
 import { Loading } from "@/components/ui/loading";
 import { card, mutedText } from "@/components/ui/styles";
 import { loadMembership } from "./load-membership";
-import { ProgramStatus } from "./programa/program-status";
+import { ProgramStatus } from "@/components/ui/program-status";
 
 export const metadata: Metadata = { title: "Mi comercio" };
 
@@ -22,7 +23,11 @@ export default function MerchantHomePage({ params }: PageProps<"/panel/[merchant
 
 async function MerchantHome({ merchantId }: { merchantId: string }) {
   const membership = await loadMembership(merchantId);
-  const [branches, program] = await Promise.all([getBranches(merchantId), getLoyaltyProgram(merchantId)]);
+  const [branches, program, customerCount] = await Promise.all([
+    getBranches(merchantId),
+    getLoyaltyProgram(merchantId),
+    getCustomerCount(merchantId),
+  ]);
   const isOwner = membership.role === "owner";
   const base = `/panel/${merchantId}`;
 
@@ -30,7 +35,7 @@ async function MerchantHome({ merchantId }: { merchantId: string }) {
     <>
       <h1 className="text-2xl font-semibold">Inicio</h1>
 
-      <dl className={`${card} grid gap-3 sm:grid-cols-3`}>
+      <dl className={`${card} grid grid-cols-2 gap-3 sm:grid-cols-4`}>
         <div>
           <dt className={mutedText}>Tu rol</dt>
           <dd className="font-medium">{isOwner ? "Dueño" : "Personal"}</dd>
@@ -42,6 +47,10 @@ async function MerchantHome({ merchantId }: { merchantId: string }) {
         <div>
           <dt className={mutedText}>Sucursales</dt>
           <dd className="font-medium">{branches.length}</dd>
+        </div>
+        <div>
+          <dt className={mutedText}>Clientes</dt>
+          <dd className="font-medium">{customerCount}</dd>
         </div>
       </dl>
 
@@ -60,7 +69,11 @@ async function MerchantHome({ merchantId }: { merchantId: string }) {
       </Link>
 
       {isOwner ? (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-3">
+          <Link href={`${base}/clientes`} className={`${card} hover:border-foreground`}>
+            <p className="font-medium">Clientes</p>
+            <p className={mutedText}>Invítalos con tu enlace o un cartel con QR.</p>
+          </Link>
           <Link href={`${base}/sucursales`} className={`${card} hover:border-foreground`}>
             <p className="font-medium">Sucursales</p>
             <p className={mutedText}>Registra los locales de tu negocio (opcional).</p>
@@ -78,7 +91,7 @@ async function MerchantHome({ merchantId }: { merchantId: string }) {
       )}
 
       <p className={mutedText}>
-        Próximamente: clientes, registro de compras y recompensas.
+        Próximamente: registro de compras y recompensas.
       </p>
     </>
   );

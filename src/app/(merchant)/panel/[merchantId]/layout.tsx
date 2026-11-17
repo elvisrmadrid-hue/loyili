@@ -32,7 +32,7 @@ async function MerchantShell({
   return (
     <>
       <AppHeader userName={name} signOutAction={signOut} />
-      <div className="border-b border-zinc-200 px-4 dark:border-zinc-800">
+      <div className="border-b border-zinc-200 px-4 print:hidden dark:border-zinc-800">
         <div className="mx-auto flex w-full max-w-2xl flex-col gap-2 pt-4">
           <p className="truncate text-lg font-semibold">{membership.name}</p>
           <MerchantNav merchantId={membership.id} isOwner={membership.role === "owner"} />
