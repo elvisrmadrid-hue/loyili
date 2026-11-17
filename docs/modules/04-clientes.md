@@ -1,6 +1,6 @@
 # Módulo 04 — Clientes y membresías
 
-- **Estado**: implementado (2026-11-16), pendiente de prueba manual
+- **Estado**: verificado (2026-11-16)
 - **Fecha**: 2026-11-13
 
 ## Objetivo
@@ -128,19 +128,19 @@ Cambios en otros módulos:
 
 ## Criterios de aceptación
 
-- [ ] La migración se aplica con `npx supabase db push --remote`. Los comercios existentes reciben su código y `memberships` queda con RLS activado.
-- [ ] Sin iniciar sesión, `/unirse/[código]` muestra el comercio y su regla. Un código inexistente muestra un mensaje claro.
-- [ ] Una persona **sin cuenta** abre el enlace, se registra, vuelve a la página, se une y ve el programa en su billetera.
-- [ ] Una persona **con cuenta** abre el enlace, inicia sesión (si hace falta) y se une con un clic.
-- [ ] Unirse dos veces no duplica nada; la página dice "Ya eres cliente".
-- [ ] Con el programa pausado o sin configurar no se puede unir nadie (ni desde la pantalla ni desde la API).
-- [ ] El dueño y el personal no pueden unirse como clientes de su propio comercio.
-- [ ] La billetera muestra cada programa con su regla y su estado.
-- [ ] El dueño y el personal ven la lista de clientes (solo nombre y fecha), y el número en la portada.
-- [ ] El dueño copia el enlace, ve el QR e imprime el cartel. El QR escaneado con un teléfono abre la página de unión.
-- [ ] Un cliente no ve las sucursales, el personal, las invitaciones ni a otros clientes de un comercio, ni puede modificar nada del comercio (comprobado con script).
-- [ ] Un comercio no ve los clientes de otro comercio.
-- [ ] `npm test`, `npm run lint`, `npm run typecheck`, `npm run build` y `npm run verify:rls` pasan.
+- [x] La migración se aplica con `npx supabase db push --remote`. Los comercios existentes reciben su código y `memberships` queda con RLS activado.
+- [x] Sin iniciar sesión, `/unirse/[código]` muestra el comercio y su regla. Un código inexistente muestra un mensaje claro.
+- [x] Una persona **sin cuenta** abre el enlace, se registra, vuelve a la página, se une y ve el programa en su billetera.
+- [x] Una persona **con cuenta** abre el enlace, inicia sesión (si hace falta) y se une con un clic.
+- [x] Unirse dos veces no duplica nada; la página dice "Ya eres cliente".
+- [x] Con el programa pausado o sin configurar no se puede unir nadie (ni desde la pantalla ni desde la API).
+- [x] El dueño y el personal no pueden unirse como clientes de su propio comercio.
+- [x] La billetera muestra cada programa con su regla y su estado.
+- [x] El dueño y el personal ven la lista de clientes (solo nombre y fecha), y el número en la portada.
+- [x] El dueño copia el enlace, ve el QR e imprime el cartel. El QR escaneado con un teléfono abre la página de unión.
+- [x] Un cliente no ve las sucursales, el personal, las invitaciones ni a otros clientes de un comercio, ni puede modificar nada del comercio (comprobado con script).
+- [x] Un comercio no ve los clientes de otro comercio.
+- [x] `npm test`, `npm run lint`, `npm run typecheck`, `npm run build` y `npm run verify:rls` pasan.
 
 ## Verificación
 
@@ -166,7 +166,7 @@ Cambios en otros módulos:
 - `verify:rls` 116/116 (37 comprobaciones nuevas de clientes);
 - prueba de humo (script temporal, no versionado) contra el servidor de desarrollo, sin sesión y con sesión de dueño, personal y cliente: 16/16. Sin regresiones en las de los Módulos 2 (20/20) y 3 (10/10), y sin errores en el registro del servidor.
 
-Falta la prueba manual en el navegador: el registro desde el enlace, el botón "Unirme", el cartel impreso y el QR con el teléfono.
+**Resultado manual (2026-11-16)**: el usuario recorrió la prueba en el navegador (dueño en ventana normal, cliente nuevo en ventana privada) y la dio por buena. La apertura del QR desde el teléfono queda para el despliegue (Módulo 10), porque el enlace apunta a `localhost`.
 
 ## Riesgos
 

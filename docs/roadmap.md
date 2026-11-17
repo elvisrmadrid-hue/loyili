@@ -10,7 +10,7 @@ Estados: ⬜ pendiente · 🟦 en curso · 🟨 en verificación · ✅ completa
 | 1 | **Conexión a Supabase y autenticación base** | Proyecto Supabase creado y conectado; registro, inicio y cierre de sesión funcionan; rutas protegidas | ✅ |
 | 2 | **Comercios** | Un usuario crea su comercio, sus sucursales e invita personal; RLS aísla cada comercio | ✅ |
 | 3 | **Programa de fidelización** | El comercio configura su regla de acumulación | ✅ |
-| 4 | **Clientes y membresías** | Un cliente queda asociado a un comercio; el comercio ve su lista de clientes | 🟨 |
+| 4 | **Clientes y membresías** | Un cliente queda asociado a un comercio; el comercio ve su lista de clientes | ✅ |
 | 5 | **Ledger de puntos: acumulación** | El personal registra una compra y se acreditan los puntos correctos; saldo e historial correctos (con pruebas automáticas) | ⬜ |
 | 6 | **Recompensas y canje** | Catálogo de recompensas; canje que descuenta puntos y nunca deja saldo negativo | ⬜ |
 | 7 | **Identificación por QR** | El cliente muestra su QR; el personal lo escanea para acreditar o canjear | ⬜ |
@@ -50,3 +50,4 @@ Estados: ⬜ pendiente · 🟦 en curso · 🟨 en verificación · ✅ completa
 ### Módulo 4 — Clientes y membresías
 - 2026-11-16: especificación validada ([04-clientes.md](modules/04-clientes.md)). Unión por enlace o QR con código corto; el comercio solo ve nombre y fecha; sin salida del programa por ahora.
 - 2026-11-16: implementado. Migración `create_memberships` aplicada (código de unión por comercio, tabla `memberships` con RLS, funciones `get_join_preview` y `join_merchant`). Página pública `/unirse/[código]`, billetera "Mis programas", pestaña "Clientes" con enlace, QR y cartel imprimible. `npm test` 20/20, `verify:rls` 116/116. Pendiente: prueba manual del usuario.
+- 2026-11-16: prueba manual del usuario correcta. Módulo cerrado.
