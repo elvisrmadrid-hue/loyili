@@ -77,6 +77,12 @@ export async function updateMerchant(
     .update({ name: parsed.data.name, currency: parsed.data.currency })
     .eq("id", merchantId)
     .select("id");
+  if (error?.message === "currency_locked") {
+    return {
+      fieldErrors: { currency: ["La moneda ya no se puede cambiar: tu comercio tiene compras registradas."] },
+      values,
+    };
+  }
   if (error) return { error: dbErrorMessage(error, "update merchant"), values };
   if (!data?.length) return { error: NOT_ALLOWED, values };
 
@@ -148,6 +154,8 @@ export async function deleteBranch(merchantId: string, branchId: string): Promis
 
   const supabase = await createClient();
   const { error } = await supabase.from("branches").delete().eq("id", branchId).eq("merchant_id", merchantId);
+  // 23503: the branch has purchases (the page hides the button in that case; this is the last barrier).
+  if (error?.code === "23503") throw new Error("Esta sucursal tiene compras registradas y no se puede eliminar.");
   if (error) throw new Error(dbErrorMessage(error, "delete branch"));
 
   refresh();

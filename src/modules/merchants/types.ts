@@ -15,6 +15,8 @@ export type Branch = {
   id: string;
   name: string;
   address: string | null;
+  /** Branches with purchases cannot be deleted (Module 5). */
+  hasPurchases: boolean;
 };
 
 export type TeamMember = {

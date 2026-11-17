@@ -3,13 +3,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { getCustomer } from "@/modules/customers";
-import { getTransactions } from "@/modules/ledger";
+import { getTransactions, reverseTransaction } from "@/modules/ledger";
+import { formatMoney } from "@/lib/currencies";
 import { formatPoints } from "@/modules/loyalty";
 import { Loading } from "@/components/ui/loading";
 import { LocalDate } from "@/components/ui/local-date";
 import { TransactionList } from "@/components/ui/transaction-list";
 import { card, mutedText, primaryButton } from "@/components/ui/styles";
 import { loadMembership } from "../../load-membership";
+import { ReverseForm } from "./reverse-form";
 
 export const metadata: Metadata = { title: "Cliente" };
 
@@ -62,6 +64,15 @@ async function CustomerDetail({ merchantId, membershipId }: { merchantId: string
           transactions={transactions}
           formatPoints={signed}
           emptyText="Todavía no tiene movimientos."
+          renderActions={(transaction) =>
+            isOwner && transaction.type === "EARN" && !transaction.reversed ? (
+              <ReverseForm
+                action={reverseTransaction.bind(null, merchantId, transaction.id)}
+                summary={`compra de ${formatMoney(transaction.purchaseAmountMinor ?? 0, currency)} (${signed(transaction.points)})`}
+                idPrefix={`reverse-${transaction.id}`}
+              />
+            ) : null
+          }
         />
       </section>
     </>

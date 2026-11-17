@@ -43,8 +43,13 @@ async function Branches({ merchantId }: { merchantId: string }) {
                 <div className="min-w-0">
                   <p className="font-medium">{branch.name}</p>
                   {branch.address && <p className={mutedText}>{branch.address}</p>}
+                  {isOwner && branch.hasPurchases && (
+                    <p className={mutedText}>
+                      Tiene compras registradas: no se puede eliminar, pero sí cambiarle el nombre.
+                    </p>
+                  )}
                 </div>
-                {isOwner && (
+                {isOwner && !branch.hasPurchases && (
                   <ConfirmActionButton
                     action={deleteBranch.bind(null, merchantId, branch.id)}
                     confirmMessage={`¿Eliminar la sucursal «${branch.name}»?`}

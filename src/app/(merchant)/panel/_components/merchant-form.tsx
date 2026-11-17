@@ -15,6 +15,8 @@ type MerchantFormProps = {
   pendingLabel: string;
   /** Extra explanation under the currency field. */
   currencyHint?: string;
+  /** The currency can no longer change (the merchant has purchases): shown read-only. */
+  currencyLocked?: boolean;
 };
 
 /** Name + currency form, used to create a merchant and to edit its settings. */
@@ -25,6 +27,7 @@ export function MerchantForm({
   submitLabel,
   pendingLabel,
   currencyHint,
+  currencyLocked = false,
 }: MerchantFormProps) {
   const [state, formAction] = useActionState(action, undefined);
   const values = state?.values ?? defaultValues;
@@ -49,7 +52,10 @@ export function MerchantForm({
           placeholder="Elige la moneda"
           defaultValue={values?.currency ?? ""}
           errors={state?.fieldErrors?.currency}
+          disabled={currencyLocked}
         />
+        {/* A disabled field is not sent with the form, so its value travels in a hidden one. */}
+        {currencyLocked && <input type="hidden" name="currency" value={defaultValues?.currency ?? ""} />}
         {currencyHint && <p className="text-sm text-zinc-600 dark:text-zinc-400">{currencyHint}</p>}
       </div>
       <SubmitButton pendingText={pendingLabel}>{submitLabel}</SubmitButton>

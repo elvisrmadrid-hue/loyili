@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { CURRENCY_OPTIONS, updateMerchant } from "@/modules/merchants";
+import { merchantHasTransactions } from "@/modules/ledger";
 import { Loading } from "@/components/ui/loading";
 import { card } from "@/components/ui/styles";
 import { MerchantForm } from "../../_components/merchant-form";
@@ -20,6 +21,7 @@ export default function SettingsPage({ params }: PageProps<"/panel/[merchantId]/
 
 async function Settings({ merchantId }: { merchantId: string }) {
   const membership = await loadMembership(merchantId, { ownerOnly: true });
+  const currencyLocked = await merchantHasTransactions(merchantId);
 
   return (
     <>
@@ -29,7 +31,12 @@ async function Settings({ merchantId }: { merchantId: string }) {
           action={updateMerchant.bind(null, merchantId)}
           currencyOptions={CURRENCY_OPTIONS.map((c) => ({ value: c.code, label: c.label }))}
           defaultValues={{ name: membership.name, currency: membership.currency }}
-          currencyHint="Puedes cambiarla mientras tu comercio no tenga compras registradas. Si la cambias, tu programa de puntos se pausará para que revises la regla."
+          currencyHint={
+            currencyLocked
+              ? "La moneda ya no se puede cambiar porque tu comercio tiene compras registradas: cambiarla alteraría el significado de los montos guardados."
+              : "Puedes cambiarla mientras tu comercio no tenga compras registradas. Si la cambias, tu programa de puntos se pausará para que revises la regla."
+          }
+          currencyLocked={currencyLocked}
           submitLabel="Guardar cambios"
           pendingLabel="Guardando…"
         />

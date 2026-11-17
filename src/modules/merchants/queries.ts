@@ -76,12 +76,18 @@ export async function getBranches(merchantId: string): Promise<Branch[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("branches")
-    .select("id, name, address")
+    .select("id, name, address, purchases:point_transactions(count)")
     .eq("merchant_id", merchantId)
     .order("name");
 
   if (error) throw new Error(`No se pudieron leer las sucursales: ${error.message}`);
-  return data as Branch[];
+  type Row = { id: string; name: string; address: string | null; purchases: { count: number }[] };
+  return (data as unknown as Row[]).map((row) => ({
+    id: row.id,
+    name: row.name,
+    address: row.address,
+    hasPurchases: (row.purchases[0]?.count ?? 0) > 0,
+  }));
 }
 
 /** People in a merchant: owner first, then staff by join date (RLS: owner only). */

@@ -1,6 +1,6 @@
 # Módulo 05 — Ledger de puntos: acumulación
 
-- **Estado**: validado (2026-11-16)
+- **Estado**: implementado (2026-11-16), pendiente de prueba manual
 - **Fecha**: 2026-11-16
 
 ## Objetivo
@@ -176,6 +176,19 @@ Cambios en otros módulos:
   - ventana normal como dueño y ventana privada como cliente;
   - registrar compras, ver el saldo subir en la billetera, anular una con motivo;
   - comprobar los bloqueos de moneda y sucursal.
+
+**Resultado automático (2026-11-16)**. Se entregó en dos partes, cada una verificada por separado: (1) compras, saldo e historial; (2) anulación y bloqueos.
+- lint, typecheck y build sin errores;
+- `npm test` 29/29 (9 nuevas para leer montos);
+- `verify:rls` 155/155 (39 nuevas del ledger: cálculo igual al de la aplicación, idempotencia, inmutabilidad, saldo igual a la suma, anulaciones y bloqueos);
+- prueba de humo (script temporal, no versionado) contra el servidor de desarrollo: 26/26. **Envía los formularios de verdad**: registrar compra, compra duplicada, monto ambiguo, anular con y sin motivo, y Ajustes con la moneda bloqueada.
+- Sin regresiones en las pruebas de humo de los Módulos 2, 3 y 4.
+
+Decisiones técnicas en el [ADR 0005](../architecture/adr/0005-saldo-materializado-y-forma-del-ledger.md).
+
+**Problema conocido (no bloqueante)**: si un formulario se envía **sin JavaScript** y la acción devuelve un error de validación, el registro del servidor muestra un `InvariantError` interno de Next.js ("cookies object does not match"). La respuesta al usuario es correcta. Ya ocurría en el Módulo 2 (formulario de Ajustes), no lo causa `connection()` y no aparece en los envíos correctos. Queda por confirmar que no aparece en el uso normal con JavaScript (se revisará el registro tras la prueba manual).
+
+Falta la prueba manual en el navegador.
 
 ## Riesgos
 
