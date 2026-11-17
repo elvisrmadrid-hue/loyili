@@ -15,6 +15,7 @@ export function MerchantNav({ merchantId, isOwner }: MerchantNavProps) {
 
   const items = [
     { href: base, label: "Inicio" },
+    { href: `${base}/compra`, label: "Registrar compra" },
     { href: `${base}/programa`, label: "Programa" },
     { href: `${base}/clientes`, label: "Clientes" },
     { href: `${base}/sucursales`, label: "Sucursales" },
@@ -30,7 +31,9 @@ export function MerchantNav({ merchantId, isOwner }: MerchantNavProps) {
   return (
     <nav className="-mb-px flex gap-1 overflow-x-auto">
       {items.map((item) => {
-        const active = pathname === item.href;
+        // A tab stays active on its sub-pages (e.g. a customer's detail under "Clientes").
+        const active =
+          pathname === item.href || (item.href !== base && item.href !== "/panel" && pathname.startsWith(`${item.href}/`));
         return (
           <Link
             key={item.href}

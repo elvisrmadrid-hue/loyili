@@ -521,6 +521,200 @@ const code2 = await joinCodeOf(b.client, m2Id);
   check(staffOther.data?.length === 0, "staff cannot see customers of other merchants", rowsOf(staffOther));
 }
 
+// ---------------------------------------------------------------------------
+// Module 5: points ledger (runs while C is still staff of merchant 1)
+// State here: merchant 1 (COP, active, 3 points per 500000 minor = $5.000, has branch
+// `branchId`); merchant 2 (USD, active, 5 points per 1000 minor = $10, no branches).
+// D is a customer of both merchants; A is a customer of merchant 2.
+// ---------------------------------------------------------------------------
+console.log("\n-- Module 5: points ledger --");
+const membershipOf = async (client, merchantId, customerId) =>
+  (await client.from("memberships").select("id").eq("merchant_id", merchantId).eq("customer_id", customerId)).data?.[0]?.id;
+const dIn1 = await membershipOf(a.client, m1Id, d.id);
+const dIn2 = await membershipOf(b.client, m2Id, d.id);
+const aIn2 = await membershipOf(b.client, m2Id, a.id);
+const balanceOf = async (client, membershipId) =>
+  (await client.from("memberships").select("points_balance").eq("id", membershipId)).data?.[0]?.points_balance;
+const purchase = (client, membershipId, amountMinor, branch = null, key = crypto.randomUUID()) =>
+  client.rpc("record_purchase", {
+    p_membership_id: membershipId,
+    p_amount_minor: amountMinor,
+    p_branch_id: branch,
+    p_idempotency_key: key,
+  });
+// Same formula as calculatePoints() in src/modules/loyalty/rules.ts (its Vitest examples).
+const expectedPoints = (amountMinor, pointsPerBlock, blockMinor) =>
+  Number((BigInt(amountMinor) / BigInt(blockMinor)) * BigInt(pointsPerBlock));
+let firstPurchaseId;
+
+// 19. Recording purchases
+{
+  // The database calculation matches the app's formula (merchant 2: 5 points per $10).
+  let ok = true;
+  const details = [];
+  for (const amount of [999, 1000, 2700, 123456]) {
+    const r = await purchase(b.client, dIn2, amount);
+    const got = r.data?.[0]?.earned_points;
+    const want = expectedPoints(amount, 5, 1000);
+    if (got !== want) ok = false;
+    details.push(`${amount}->${got ?? r.error?.message}/${want}`);
+  }
+  check(ok, "database points match the app formula (rounding down)", details.join(" "));
+  check((await balanceOf(d.client, dIn2)) === 0 + 5 + 10 + 615, "the balance adds up the earned points", String(await balanceOf(d.client, dIn2)));
+
+  const zero = await purchase(b.client, dIn2, 500);
+  check(zero.data?.[0]?.earned_points === 0 && Boolean(zero.data?.[0]?.transaction_id), "a purchase below one block is recorded with 0 points", zero.error?.message);
+
+  const byStaff = await purchase(c.client, dIn1, 1270000, branchId);
+  firstPurchaseId = byStaff.data?.[0]?.transaction_id;
+  check(byStaff.data?.[0]?.earned_points === 6, "staff record a purchase in their merchant (with branch)", byStaff.error?.message ?? JSON.stringify(byStaff.data));
+
+  const key = crypto.randomUUID();
+  const once = await purchase(a.client, dIn1, 1000000, branchId, key);
+  const twice = await purchase(a.client, dIn1, 1000000, branchId, key);
+  const countKey = await a.client.from("point_transactions").select("id").eq("idempotency_key", key);
+  check(
+    once.data?.[0]?.transaction_id === twice.data?.[0]?.transaction_id && countKey.data?.length === 1,
+    "the same idempotency key records the purchase only once",
+    rowsOf(countKey),
+  );
+  check(twice.data?.[0]?.balance === once.data?.[0]?.balance, "a replay does not change the balance", JSON.stringify(twice.data));
+
+  const conflict = await purchase(a.client, dIn1, 999999, branchId, key);
+  check(conflict.error?.message === "idempotency_conflict", "reusing a key for a different purchase is rejected", conflict.error?.message ?? "allowed!");
+
+  const noBranch = await purchase(a.client, dIn1, 1000000);
+  check(noBranch.error?.message === "branch_required", "a branch is required when the merchant has branches", noBranch.error?.message ?? "allowed!");
+
+  const otherBranch = await b.client.from("branches").insert({ merchant_id: m2Id, name: "Sucursal de B" }).select("id");
+  const foreignBranch = await purchase(a.client, dIn1, 1000000, otherBranch.data?.[0]?.id);
+  check(foreignBranch.error?.message === "invalid_branch", "another merchant's branch is rejected", foreignBranch.error?.message ?? "allowed!");
+  await b.client.from("branches").delete().eq("id", otherBranch.data?.[0]?.id);
+
+  for (const [label, amount] of [["zero", 0], ["negative", -500], ["huge", 10000000001]]) {
+    const bad = await purchase(a.client, dIn1, amount, branchId);
+    check(bad.error?.message === "invalid_amount", `a ${label} amount is rejected`, bad.error?.message ?? "allowed!");
+  }
+
+  const self = await purchase(d.client, dIn2, 100000);
+  check(self.error?.message === "not_allowed", "a customer cannot credit points to themselves", self.error?.message ?? "allowed!");
+
+  const foreign = await purchase(b.client, dIn1, 100000, branchId);
+  check(foreign.error?.message === "not_allowed", "another merchant cannot record purchases here", foreign.error?.message ?? "allowed!");
+
+  const anon = await purchase(newClient(), dIn2, 100000);
+  check(Boolean(anon.error), "signed-out visitors cannot record purchases", anon.error?.message ?? "allowed!");
+
+  await b.client.from("loyalty_programs").update({ is_active: false }).eq("merchant_id", m2Id);
+  const paused = await purchase(b.client, dIn2, 100000);
+  check(paused.error?.message === "program_not_active", "no purchases while the program is paused", paused.error?.message ?? "allowed!");
+  await b.client.from("loyalty_programs").update({ is_active: true }).eq("merchant_id", m2Id);
+
+  const aBuys = await purchase(b.client, aIn2, 5000);
+  check(aBuys.data?.[0]?.earned_points === 25, "each customer has their own balance", aBuys.error?.message);
+}
+
+// 20. The ledger cannot be tampered with
+{
+  const insert = await b.client.from("point_transactions").insert({
+    merchant_id: m2Id, membership_id: dIn2, type: "EARN", points: 1000, currency: "USD", created_by: b.id,
+  });
+  check(Boolean(insert.error), "nobody inserts movements directly", insert.error?.code ?? "allowed!");
+
+  const update = await b.client.from("point_transactions").update({ points: 9999 }).eq("membership_id", dIn2).select();
+  check(Boolean(update.error) || update.data.length === 0, "nobody updates movements", rowsOf(update));
+
+  const del = await b.client.from("point_transactions").delete().eq("membership_id", dIn2).select();
+  check(Boolean(del.error) || del.data.length === 0, "nobody deletes movements", rowsOf(del));
+
+  const setBalance = await b.client.from("memberships").update({ points_balance: 99999 }).eq("id", dIn2).select();
+  check(Boolean(setBalance.error) || setBalance.data.length === 0, "nobody sets a balance directly (owner)", rowsOf(setBalance));
+
+  const selfBalance = await d.client.from("memberships").update({ points_balance: 99999 }).eq("id", dIn2).select();
+  check(Boolean(selfBalance.error) || selfBalance.data.length === 0, "nobody sets a balance directly (customer)", rowsOf(selfBalance));
+}
+
+// 21. Reversals
+{
+  const byStaff = await c.client.rpc("reverse_transaction", { p_transaction_id: firstPurchaseId, p_reason: "Error de monto" });
+  check(byStaff.error?.message === "not_allowed", "staff cannot reverse purchases", byStaff.error?.message ?? "allowed!");
+
+  const byOther = await b.client.rpc("reverse_transaction", { p_transaction_id: firstPurchaseId, p_reason: "Error de monto" });
+  check(byOther.error?.message === "not_allowed", "another merchant cannot reverse purchases here", byOther.error?.message ?? "allowed!");
+
+  const noReason = await a.client.rpc("reverse_transaction", { p_transaction_id: firstPurchaseId, p_reason: "  " });
+  check(noReason.error?.message === "invalid_reason", "a reason is required", noReason.error?.message ?? "allowed!");
+
+  const before = await balanceOf(a.client, dIn1);
+  const reversed = await a.client.rpc("reverse_transaction", { p_transaction_id: firstPurchaseId, p_reason: " Monto equivocado " });
+  check(
+    reversed.data?.[0]?.reversed_points === -6 && reversed.data?.[0]?.balance === before - 6,
+    "the owner reverses a purchase and its points are deducted",
+    reversed.error?.message ?? JSON.stringify(reversed.data),
+  );
+
+  const row = await a.client.from("point_transactions").select("note, reference_id, branch_id").eq("id", reversed.data?.[0]?.reversal_id);
+  check(
+    row.data?.[0]?.note === "Monto equivocado" && row.data?.[0]?.reference_id === firstPurchaseId && row.data?.[0]?.branch_id === branchId,
+    "the reversal keeps the reason, the original purchase and its branch",
+    JSON.stringify(row.data?.[0]),
+  );
+
+  const again = await a.client.rpc("reverse_transaction", { p_transaction_id: firstPurchaseId, p_reason: "Otra vez" });
+  check(again.error?.message === "already_reversed", "a purchase can be reversed only once", again.error?.message ?? "allowed!");
+
+  const ofReversal = await a.client.rpc("reverse_transaction", { p_transaction_id: reversed.data?.[0]?.reversal_id, p_reason: "Deshacer" });
+  check(ofReversal.error?.message === "not_reversible", "a reversal cannot be reversed", ofReversal.error?.message ?? "allowed!");
+}
+
+// 22. Who sees which movements, and the balance always matches the ledger
+{
+  const mine = await d.client.from("point_transactions").select("membership_id");
+  check(
+    mine.data?.length > 0 && mine.data.every((t) => t.membership_id === dIn1 || t.membership_id === dIn2),
+    "a customer sees only their own movements",
+    rowsOf(mine),
+  );
+
+  const aSees = await a.client.from("point_transactions").select("id").eq("membership_id", dIn2);
+  check(aSees.data?.length === 0, "another customer cannot see those movements", rowsOf(aSees));
+
+  const bSees = await b.client.from("point_transactions").select("merchant_id");
+  check(bSees.data?.length > 0 && bSees.data.every((t) => t.merchant_id === m2Id), "a merchant sees only its own movements", rowsOf(bSees));
+
+  const staffSees = await c.client.from("point_transactions").select("id").eq("merchant_id", m1Id);
+  check(staffSees.data?.length === 3, "staff see their merchant's movements", rowsOf(staffSees));
+
+  const anonSees = await newClient().from("point_transactions").select("id");
+  check(Boolean(anonSees.error) || anonSees.data.length === 0, "signed-out visitors see no movements", rowsOf(anonSees));
+
+  let consistent = true;
+  const summary = [];
+  for (const [client, id] of [[a.client, dIn1], [b.client, dIn2], [b.client, aIn2]]) {
+    const moves = await client.from("point_transactions").select("points").eq("membership_id", id);
+    const sum = moves.data.reduce((total, t) => total + t.points, 0);
+    const balance = await balanceOf(client, id);
+    if (sum !== balance) consistent = false;
+    summary.push(`${sum}/${balance}`);
+  }
+  check(consistent, "every balance equals the sum of its movements", summary.join(" "));
+}
+
+// 23. Locks that protect the history
+{
+  const currency = await a.client.from("merchants").update({ currency: "USD" }).eq("id", m1Id).select();
+  check(currency.error?.message === "currency_locked", "the currency cannot change after the first purchase", currency.error?.message ?? "allowed!");
+
+  const rename = await a.client.from("merchants").update({ name: "Café de A" }).eq("id", m1Id).select("id");
+  check(rename.data?.length === 1, "the name can still change", rowsOf(rename));
+
+  const delBranch = await a.client.from("branches").delete().eq("id", branchId).select();
+  check(delBranch.error?.code === "23503", "a branch with purchases cannot be deleted", delBranch.error?.code ?? rowsOf(delBranch));
+
+  const renameBranch = await a.client.from("branches").update({ name: "Norte renombrada" }).eq("id", branchId).select("id");
+  check(renameBranch.data?.length === 1, "a branch with purchases can be renamed", rowsOf(renameBranch));
+}
+
 // 12. Owner managing the team
 {
   const team = await a.client.from("profiles").select("full_name").eq("id", c.id);
@@ -538,8 +732,10 @@ const code2 = await joinCodeOf(b.client, m2Id);
   const lost = await c.client.from("merchants").select("id").eq("id", m1Id);
   check(lost.data?.length === 0, "removed staff loses access immediately", rowsOf(lost));
 
-  const delBranch = await a.client.from("branches").delete().eq("id", branchId).select("id");
-  check(delBranch.data?.length === 1, "owner can delete a branch", rowsOf(delBranch));
+  // (branchId has purchases since Module 5, so a fresh branch is used here.)
+  const temp = await a.client.from("branches").insert({ merchant_id: m1Id, name: "Temporal" }).select("id");
+  const delBranch = await a.client.from("branches").delete().eq("id", temp.data?.[0]?.id).select("id");
+  check(delBranch.data?.length === 1, "owner can delete a branch without purchases", rowsOf(delBranch));
 
   const delMerchant = await a.client.from("merchants").delete().eq("id", m1Id).select();
   check(Boolean(delMerchant.error) || delMerchant.data.length === 0, "nobody can delete a merchant (out of scope)", rowsOf(delMerchant));

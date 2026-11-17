@@ -71,3 +71,14 @@ export function formatWholeAmount(units: number, code: string): string {
     maximumFractionDigits: 0,
   }).format(units);
 }
+
+/** Formats an amount in minor units, showing cents only when there are any: "$ 25.500", "$12.50". */
+export function formatMoney(amountMinor: number, code: string): string {
+  const decimals = currencyDecimals(code);
+  return new Intl.NumberFormat(currencyLocale(code), {
+    style: "currency",
+    currency: code,
+    minimumFractionDigits: amountMinor % 10 ** decimals === 0 ? 0 : decimals,
+    maximumFractionDigits: decimals,
+  }).format(amountMinor / 10 ** decimals);
+}

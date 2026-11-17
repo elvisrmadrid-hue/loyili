@@ -2,7 +2,15 @@
 // Server-only (it reaches next/headers through Supabase). Client components import the
 // pure helpers from "@/modules/customers/rules" and receive Server Actions as props.
 export { joinMerchant } from "./actions";
-export { getCustomerCount, getCustomers, getJoinPreview, getMyMemberships } from "./queries";
+export {
+  getCustomer,
+  getCustomerCount,
+  getCustomers,
+  getJoinPreview,
+  getMyMembership,
+  getMyMemberships,
+  searchCustomers,
+} from "./queries";
 export { joinPath, normalizeJoinCode } from "./rules";
 export type {
   Customer,

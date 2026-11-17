@@ -23,6 +23,7 @@ export type WalletMembership = {
   currency: string;
   /** ISO date (UTC). */
   joinedAt: string;
+  pointsBalance: number;
   program: (EarningRule & { isActive: boolean }) | null;
 };
 
@@ -32,4 +33,5 @@ export type Customer = {
   fullName: string;
   /** ISO date (UTC). */
   joinedAt: string;
+  pointsBalance: number;
 };

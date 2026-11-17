@@ -5,7 +5,7 @@ import { currencyLabel, getBranches } from "@/modules/merchants";
 import { getCustomerCount } from "@/modules/customers";
 import { describeRule, getLoyaltyProgram } from "@/modules/loyalty";
 import { Loading } from "@/components/ui/loading";
-import { card, mutedText } from "@/components/ui/styles";
+import { card, mutedText, primaryButton } from "@/components/ui/styles";
 import { loadMembership } from "./load-membership";
 import { ProgramStatus } from "@/components/ui/program-status";
 
@@ -54,6 +54,12 @@ async function MerchantHome({ merchantId }: { merchantId: string }) {
         </div>
       </dl>
 
+      {program?.isActive && (
+        <Link href={`${base}/compra`} className={primaryButton}>
+          Registrar compra
+        </Link>
+      )}
+
       <Link href={`${base}/programa`} className={`${card} flex flex-col gap-1 hover:border-foreground`}>
         <div className="flex items-center justify-between gap-3">
           <p className="font-medium">Programa de puntos</p>
@@ -85,13 +91,13 @@ async function MerchantHome({ merchantId }: { merchantId: string }) {
         </div>
       ) : (
         <p className={mutedText}>
-          Eres parte del personal de este comercio. Desde aquí registrarás compras y canjes cuando
-          esas funciones estén disponibles.
+          Eres parte del personal de este comercio: registra las compras de los clientes y consulta
+          sus puntos en «Clientes». Los canjes llegarán pronto.
         </p>
       )}
 
       <p className={mutedText}>
-        Próximamente: registro de compras y recompensas.
+        Próximamente: recompensas y canjes.
       </p>
     </>
   );

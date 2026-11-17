@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { getCurrentProfile, requireUser, signOut } from "@/modules/auth";
 import { getMyMemberships } from "@/modules/customers";
-import { describeRule } from "@/modules/loyalty";
+import { describeRule, formatPoints } from "@/modules/loyalty";
 import { getMyMerchants } from "@/modules/merchants";
 import { AppHeader } from "@/components/app-header";
 import { FormAlert } from "@/components/ui/form-alert";
@@ -54,25 +54,29 @@ async function WalletContent({ searchParams }: Pick<PageProps<"/wallet">, "searc
         ) : (
           <ul className="flex flex-col gap-3">
             {memberships.map((membership) => (
-              <li key={membership.id} className={`${card} flex flex-col gap-1`}>
+              <li key={membership.id}>
+                <Link
+                  href={`/wallet/${membership.merchantId}`}
+                  className={`${card} flex flex-col gap-1 hover:border-foreground`}
+                >
                 <div className="flex items-center justify-between gap-3">
                   <p className="truncate text-lg font-semibold">{membership.merchantName}</p>
                   {membership.program && !membership.program.isActive && <ProgramStatus active={false} />}
                 </div>
+                <p className="text-3xl font-semibold">{formatPoints(membership.pointsBalance, membership.currency)}</p>
                 <p>
                   {membership.program
                     ? `Ganas ${describeRule(membership.program, membership.currency)} gastados.`
                     : "Este comercio aún no tiene programa de puntos."}
                 </p>
                 <p className={mutedText}>
-                  Cliente desde el <LocalDate iso={membership.joinedAt} />
+                  Cliente desde el <LocalDate iso={membership.joinedAt} /> · Ver movimientos
                 </p>
+                </Link>
               </li>
             ))}
           </ul>
         )}
-
-        <p className={mutedText}>Pronto verás aquí tus puntos y movimientos en cada comercio.</p>
 
         <Link href={merchants.length > 0 ? "/panel" : "/panel/nuevo"} className="text-sm underline underline-offset-4">
           {merchants.length > 0 ? "Ir al panel de mis comercios" : "¿Tienes un negocio? Crea tu programa de puntos"}

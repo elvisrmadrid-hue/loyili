@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { getSiteUrl } from "@/lib/supabase/env";
 import { qrSvgDataUrl } from "@/lib/qr";
 import { getCustomers, joinPath } from "@/modules/customers";
-import { getLoyaltyProgram } from "@/modules/loyalty";
+import { formatPoints, getLoyaltyProgram } from "@/modules/loyalty";
 import { CopyField } from "@/components/ui/copy-field";
 import { Loading } from "@/components/ui/loading";
 import { LocalDate } from "@/components/ui/local-date";
@@ -51,11 +51,19 @@ async function Customers({ merchantId }: { merchantId: string }) {
         ) : (
           <ul className={`${card} flex flex-col divide-y divide-zinc-200 py-0 dark:divide-zinc-800`}>
             {customers.map((customer) => (
-              <li key={customer.membershipId} className="flex items-center justify-between gap-3 py-3">
-                <p className="truncate font-medium">{customer.fullName}</p>
-                <p className={`${mutedText} shrink-0`}>
-                  desde <LocalDate iso={customer.joinedAt} />
-                </p>
+              <li key={customer.membershipId}>
+                <Link
+                  href={`/panel/${merchantId}/clientes/${customer.membershipId}`}
+                  className="flex items-center justify-between gap-3 py-3 hover:underline"
+                >
+                  <span className="min-w-0">
+                    <span className="block truncate font-medium">{customer.fullName}</span>
+                    <span className={mutedText}>
+                      desde <LocalDate iso={customer.joinedAt} />
+                    </span>
+                  </span>
+                  <span className="shrink-0 font-medium">{formatPoints(customer.pointsBalance, membership.currency)}</span>
+                </Link>
               </li>
             ))}
           </ul>
