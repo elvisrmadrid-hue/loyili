@@ -12,7 +12,7 @@ Estados: ⬜ pendiente · 🟦 en curso · 🟨 en verificación · ✅ completa
 | 3 | **Programa de fidelización** | El comercio configura su regla de acumulación | ✅ |
 | 4 | **Clientes y membresías** | Un cliente queda asociado a un comercio; el comercio ve su lista de clientes | ✅ |
 | 5 | **Ledger de puntos: acumulación** | El personal registra una compra y se acreditan los puntos correctos; saldo e historial correctos (con pruebas automáticas) | ✅ |
-| 6 | **Recompensas y canje** | Catálogo de recompensas; canje que descuenta puntos y nunca deja saldo negativo | ⬜ |
+| 6 | **Recompensas y canje** | Catálogo de recompensas; canje que descuenta puntos y nunca deja saldo negativo | 🟦 |
 | 7 | **Identificación por QR** | El cliente muestra su QR; el personal lo escanea para acreditar o canjear | ⬜ |
 | 8 | **Billetera PWA** | La billetera se instala en el teléfono y se ve bien en móvil | ⬜ |
 | 9 | **Reportes del comercio** | Métricas básicas (clientes activos, puntos emitidos/canjeados) | ⬜ |
@@ -56,3 +56,6 @@ Estados: ⬜ pendiente · 🟦 en curso · 🟨 en verificación · ✅ completa
 - 2026-11-16: especificación validada ([05-ledger-acumulacion.md](modules/05-ledger-acumulacion.md)). Búsqueda por nombre en caja, anulación solo del dueño con motivo, sin ajustes manuales, sucursales con compras no eliminables.
 - 2026-11-16: implementado en dos partes. Migración `create_point_transactions` aplicada (ledger inmutable, saldo materializado, `record_purchase`, `reverse_transaction`, bloqueos de moneda y sucursal). Pantalla "Registrar compra", detalle de cliente con historial y anulación, saldo y movimientos en la billetera. `npm test` 29/29, `verify:rls` 155/155. Decisiones en [ADR 0005](architecture/adr/0005-saldo-materializado-y-forma-del-ledger.md). Pendiente: prueba manual del usuario.
 - 2026-11-17: prueba manual del usuario correcta, sin errores en el registro del servidor. Se mantiene la lectura de montos según el formato de cada moneda. Módulo cerrado.
+
+### Módulo 6 — Recompensas y canje
+- 2026-11-17: especificación validada ([06-recompensas-canje.md](modules/06-recompensas-canje.md)). Canje en caja por el personal; anulación solo del dueño con motivo; sin stock ni fechas; catálogo visible para clientes y en la página pública; con el programa pausado se puede seguir canjeando.
