@@ -715,6 +715,147 @@ let firstPurchaseId;
   check(renameBranch.data?.length === 1, "a branch with purchases can be renamed", rowsOf(renameBranch));
 }
 
+// ---------------------------------------------------------------------------
+// Module 6: rewards and redemption (runs while C is still staff of merchant 1)
+// Balances here: D in merchant 1 = 6, D in merchant 2 = 630, A in merchant 2 = 25.
+// ---------------------------------------------------------------------------
+console.log("\n-- Module 6: rewards --");
+const reward = (client, merchantId, name, cost, extra = {}) =>
+  client.from("rewards").insert({ merchant_id: merchantId, name, points_cost: cost, ...extra }).select("id");
+const redeem = (client, membershipId, rewardId, key = crypto.randomUUID()) =>
+  client.rpc("redeem_reward", { p_membership_id: membershipId, p_reward_id: rewardId, p_idempotency_key: key });
+let coffeeId;
+let dessertId;
+let capId;
+let redemptionId;
+
+// 24. Catalog
+{
+  const coffee = await reward(a.client, m1Id, "Café gratis", 5, { description: "Un café americano" });
+  coffeeId = coffee.data?.[0]?.id;
+  check(Boolean(coffeeId), "the owner creates a reward", coffee.error?.message);
+
+  const dup = await reward(a.client, m1Id, "CAFÉ GRATIS", 9);
+  check(dup.error?.code === "23505", "reward names are unique per merchant (any case)", dup.error?.code ?? "allowed!");
+
+  for (const [label, cost] of [["0 points", 0], ["more than 1,000,000 points", 1000001]]) {
+    const bad = await reward(a.client, m1Id, `Mala ${cost}`, cost);
+    check(bad.error?.code === "23514", `the database rejects a cost of ${label}`, bad.error?.code ?? "allowed!");
+  }
+
+  const byStaff = await reward(c.client, m1Id, "Del cajero", 1);
+  check(Boolean(byStaff.error), "staff cannot create rewards", byStaff.error?.code ?? "allowed!");
+
+  const byOther = await reward(b.client, m1Id, "Ajena", 1);
+  check(Boolean(byOther.error), "another owner cannot create rewards here", byOther.error?.code ?? "allowed!");
+
+  const dessert = await reward(a.client, m1Id, "Postre", 3);
+  dessertId = dessert.data?.[0]?.id;
+  const off = await a.client.from("rewards").update({ is_active: false }).eq("id", dessertId).select("is_active");
+  check(off.data?.[0]?.is_active === false, "the owner deactivates a reward", rowsOf(off));
+
+  const cap = await reward(b.client, m2Id, "Gorra", 10);
+  capId = cap.data?.[0]?.id;
+
+  const staffRead = await c.client.from("rewards").select("id").eq("merchant_id", m1Id);
+  check(staffRead.data?.length === 2, "staff see the whole catalog (active and inactive)", rowsOf(staffRead));
+
+  const customerRead = await d.client.from("rewards").select("id").eq("merchant_id", m1Id);
+  check(customerRead.data?.length === 1 && customerRead.data[0].id === coffeeId, "customers see only active rewards", rowsOf(customerRead));
+
+  const otherRead = await b.client.from("rewards").select("id").eq("merchant_id", m1Id);
+  check(otherRead.data?.length === 0, "another merchant cannot see the catalog", rowsOf(otherRead));
+
+  const anonRead = await newClient().from("rewards").select("id");
+  check(Boolean(anonRead.error) || anonRead.data.length === 0, "signed-out visitors cannot read the rewards table", rowsOf(anonRead));
+
+  const pub = await newClient().rpc("get_public_rewards", { p_code: code1 });
+  check(
+    pub.data?.length === 1 && pub.data[0].name === "Café gratis" && Object.keys(pub.data[0]).length === 3,
+    "the public list shows only active rewards (name, description, cost)",
+    pub.error?.message ?? JSON.stringify(pub.data),
+  );
+
+  const staffUpd = await c.client.from("rewards").update({ points_cost: 1 }).eq("id", coffeeId).select();
+  check(Boolean(staffUpd.error) || staffUpd.data.length === 0, "staff cannot edit rewards", rowsOf(staffUpd));
+
+  const customerUpd = await d.client.from("rewards").update({ points_cost: 1 }).eq("id", coffeeId).select();
+  check(Boolean(customerUpd.error) || customerUpd.data.length === 0, "customers cannot edit rewards", rowsOf(customerUpd));
+}
+
+// 25. Redemption
+{
+  const key = crypto.randomUUID();
+  const first = await redeem(c.client, dIn1, coffeeId, key);
+  redemptionId = first.data?.[0]?.transaction_id;
+  check(first.data?.[0]?.spent_points === 5 && first.data?.[0]?.balance === 1, "staff redeem a reward and its cost is deducted", first.error?.message ?? JSON.stringify(first.data));
+
+  const row = await a.client.from("point_transactions").select("type, points, reward_name").eq("id", redemptionId);
+  check(row.data?.[0]?.type === "REDEEM" && row.data[0].points === -5 && row.data[0].reward_name === "Café gratis", "the redemption is a REDEEM movement with the reward name", JSON.stringify(row.data?.[0]));
+
+  const replay = await redeem(c.client, dIn1, coffeeId, key);
+  check(replay.data?.[0]?.transaction_id === redemptionId && replay.data?.[0]?.balance === 1, "the same idempotency key redeems only once", JSON.stringify(replay.data));
+
+  const conflict = await redeem(c.client, dIn1, dessertId, key);
+  check(conflict.error?.message === "idempotency_conflict", "reusing a key for another reward is rejected", conflict.error?.message ?? "allowed!");
+
+  const broke = await redeem(c.client, dIn1, coffeeId);
+  check(broke.error?.message === "insufficient_balance", "a redemption never leaves a negative balance", broke.error?.message ?? "allowed!");
+
+  const inactive = await redeem(a.client, dIn1, dessertId);
+  check(inactive.error?.message === "reward_not_available", "inactive rewards cannot be redeemed", inactive.error?.message ?? "allowed!");
+
+  const foreignReward = await redeem(a.client, dIn1, capId);
+  check(foreignReward.error?.message === "reward_not_available", "another merchant's reward cannot be redeemed here", foreignReward.error?.message ?? "allowed!");
+
+  const self = await redeem(d.client, dIn1, coffeeId);
+  check(self.error?.message === "not_allowed", "customers cannot redeem by themselves", self.error?.message ?? "allowed!");
+
+  const other = await redeem(b.client, dIn1, coffeeId);
+  check(other.error?.message === "not_allowed", "another merchant cannot redeem for these customers", other.error?.message ?? "allowed!");
+
+  await b.client.from("loyalty_programs").update({ is_active: false }).eq("merchant_id", m2Id);
+  const whilePaused = await redeem(b.client, dIn2, capId);
+  check(whilePaused.data?.[0]?.spent_points === 10, "redeeming works while the program is paused", whilePaused.error?.message);
+  await b.client.from("loyalty_programs").update({ is_active: true }).eq("merchant_id", m2Id);
+
+  await a.client.from("rewards").update({ name: "Café americano gratis", points_cost: 7 }).eq("id", coffeeId);
+  const old = await a.client.from("point_transactions").select("points, reward_name").eq("id", redemptionId);
+  check(old.data?.[0]?.reward_name === "Café gratis" && old.data[0].points === -5, "past redemptions keep the name and cost they had", JSON.stringify(old.data?.[0]));
+
+  const delUsed = await a.client.from("rewards").delete().eq("id", coffeeId).select();
+  check(delUsed.error?.code === "23503", "a redeemed reward cannot be deleted", delUsed.error?.code ?? rowsOf(delUsed));
+
+  const temp = await reward(a.client, m1Id, "Temporal", 1);
+  const staffDel = await c.client.from("rewards").delete().eq("id", temp.data?.[0]?.id).select();
+  check(Boolean(staffDel.error) || staffDel.data.length === 0, "staff cannot delete rewards", rowsOf(staffDel));
+  const delNew = await a.client.from("rewards").delete().eq("id", temp.data?.[0]?.id).select("id");
+  check(delNew.data?.length === 1, "a reward never redeemed can be deleted", rowsOf(delNew));
+}
+
+// 26. Reversing a redemption
+{
+  const byStaff = await c.client.rpc("reverse_transaction", { p_transaction_id: redemptionId, p_reason: "Error" });
+  check(byStaff.error?.message === "not_allowed", "staff cannot reverse redemptions", byStaff.error?.message ?? "allowed!");
+
+  const back = await a.client.rpc("reverse_transaction", { p_transaction_id: redemptionId, p_reason: "Canje equivocado" });
+  check(back.data?.[0]?.reversed_points === 5 && back.data?.[0]?.balance === 6, "the owner reverses a redemption and the points come back", back.error?.message ?? JSON.stringify(back.data));
+
+  const again = await a.client.rpc("reverse_transaction", { p_transaction_id: redemptionId, p_reason: "Otra vez" });
+  check(again.error?.message === "already_reversed", "a redemption can be reversed only once", again.error?.message ?? "allowed!");
+
+  let consistent = true;
+  const summary = [];
+  for (const [client, id] of [[a.client, dIn1], [b.client, dIn2], [b.client, aIn2]]) {
+    const moves = await client.from("point_transactions").select("points").eq("membership_id", id);
+    const sum = moves.data.reduce((total, t) => total + t.points, 0);
+    const balance = await balanceOf(client, id);
+    if (sum !== balance) consistent = false;
+    summary.push(`${sum}/${balance}`);
+  }
+  check(consistent, "every balance still equals the sum of its movements", summary.join(" "));
+}
+
 // 12. Owner managing the team
 {
   const team = await a.client.from("profiles").select("full_name").eq("id", c.id);

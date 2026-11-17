@@ -1,4 +1,4 @@
-export type TransactionType = "EARN" | "REVERSAL";
+export type TransactionType = "EARN" | "REDEEM" | "REVERSAL";
 
 /** One movement of a membership's points history. */
 export type Transaction = {
@@ -9,6 +9,8 @@ export type Transaction = {
   /** Purchase amount in minor units (purchases only). */
   purchaseAmountMinor: number | null;
   currency: string;
+  /** Redemptions: name of the reward when it was redeemed. */
+  rewardName: string | null;
   /** Reversal reason. */
   note: string | null;
   /** ISO date (UTC). */
@@ -17,6 +19,6 @@ export type Transaction = {
   branchName: string | null;
   /** Who recorded it (only readable by the owner). */
   authorName: string | null;
-  /** Purchases: whether it has been reversed. */
+  /** Purchases and redemptions: whether it has been reversed. */
   reversed: boolean;
 };

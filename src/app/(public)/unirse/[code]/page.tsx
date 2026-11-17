@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { getJoinPreview, joinMerchant, joinPath, type JoinPreview } from "@/modules/customers";
-import { describeRule } from "@/modules/loyalty";
+import { describeRule, formatPoints } from "@/modules/loyalty";
+import { getPublicRewards } from "@/modules/rewards";
 import { AuthCard } from "@/components/ui/auth-card";
 import { Loading } from "@/components/ui/loading";
 import { primaryButton, secondaryButton } from "@/components/ui/styles";
@@ -75,11 +76,32 @@ async function Join({ rawCode }: { rawCode: string }) {
     );
   }
 
+  const rewards = await getPublicRewards(preview.code);
   return (
     <AuthCard
       title={`Únete a ${merchantName}`}
       description={`Gana ${describeRule(preview.rule, preview.currency)} gastados en tus compras.`}
     >
+      {rewards.length > 0 && (
+        <section className="flex flex-col gap-2">
+          <h2 className="text-center text-sm font-semibold">Canjea tus puntos por</h2>
+          <ul className="flex flex-col divide-y divide-zinc-200 rounded-2xl border border-zinc-200 px-4 dark:divide-zinc-800 dark:border-zinc-800">
+            {rewards.map((reward) => (
+              <li key={reward.name} className="flex items-center justify-between gap-3 py-2">
+                <span className="min-w-0">
+                  <span className="block font-medium">{reward.name}</span>
+                  {reward.description && (
+                    <span className="block text-sm text-zinc-600 dark:text-zinc-400">{reward.description}</span>
+                  )}
+                </span>
+                <span className="shrink-0 text-sm text-zinc-600 dark:text-zinc-400">
+                  {formatPoints(reward.pointsCost, preview.currency)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       {viewerStatus === "anonymous" ? <SignInChoices preview={preview} /> : <JoinForm action={joinMerchant.bind(null, preview.code)} />}
     </AuthCard>
   );

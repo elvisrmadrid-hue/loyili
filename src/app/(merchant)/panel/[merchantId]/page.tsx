@@ -54,9 +54,9 @@ async function MerchantHome({ merchantId }: { merchantId: string }) {
         </div>
       </dl>
 
-      {program?.isActive && (
-        <Link href={`${base}/compra`} className={primaryButton}>
-          Registrar compra
+      {program && (
+        <Link href={`${base}/caja`} className={primaryButton}>
+          Abrir caja
         </Link>
       )}
 
@@ -91,14 +91,11 @@ async function MerchantHome({ merchantId }: { merchantId: string }) {
         </div>
       ) : (
         <p className={mutedText}>
-          Eres parte del personal de este comercio: registra las compras de los clientes y consulta
-          sus puntos en «Clientes». Los canjes llegarán pronto.
+          Eres parte del personal de este comercio: en «Caja» registras las compras y canjeas
+          recompensas, y en «Clientes» consultas sus puntos.
         </p>
       )}
 
-      <p className={mutedText}>
-        Próximamente: recompensas y canjes.
-      </p>
     </>
   );
 }

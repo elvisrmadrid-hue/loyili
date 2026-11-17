@@ -5,19 +5,22 @@ import { getCustomer, searchCustomers, type Customer } from "@/modules/customers
 import { recordPurchase } from "@/modules/ledger";
 import { formatPoints, getLoyaltyProgram } from "@/modules/loyalty";
 import { getBranches } from "@/modules/merchants";
+import { getActiveRewards, redeemReward } from "@/modules/rewards";
 import { Loading } from "@/components/ui/loading";
 import { LocalDate } from "@/components/ui/local-date";
 import { card, mutedText, secondaryButton } from "@/components/ui/styles";
 import { loadMembership } from "../load-membership";
 import { PurchaseForm } from "./purchase-form";
+import { RedeemList } from "./redeem-list";
 
-export const metadata: Metadata = { title: "Registrar compra" };
+export const metadata: Metadata = { title: "Caja" };
 
-export default function PurchasePage({ params, searchParams }: PageProps<"/panel/[merchantId]/compra">) {
+/** Cash register: pick a customer once, then record a purchase or redeem a reward. */
+export default function CashRegisterPage({ params, searchParams }: PageProps<"/panel/[merchantId]/caja">) {
   return (
     <Suspense fallback={<Loading />}>
       {Promise.all([params, searchParams]).then(([{ merchantId }, query]) => (
-        <Purchase
+        <CashRegister
           merchantId={merchantId}
           search={typeof query.q === "string" ? query.q : ""}
           membershipId={typeof query.cliente === "string" ? query.cliente : null}
@@ -27,7 +30,7 @@ export default function PurchasePage({ params, searchParams }: PageProps<"/panel
   );
 }
 
-async function Purchase({
+async function CashRegister({
   merchantId,
   search,
   membershipId,
@@ -37,16 +40,20 @@ async function Purchase({
   membershipId: string | null;
 }) {
   const membership = await loadMembership(merchantId);
-  const program = await getLoyaltyProgram(merchantId);
-  const base = `/panel/${merchantId}/compra`;
+  const [program, rewards] = await Promise.all([getLoyaltyProgram(merchantId), getActiveRewards(merchantId)]);
+  const base = `/panel/${merchantId}/caja`;
+  const canEarn = Boolean(program?.isActive);
+  const isOwner = membership.role === "owner";
 
-  if (!program?.isActive) {
+  // Pausing the program stops earning, not redeeming: the register is useful while either works.
+  if (!canEarn && rewards.length === 0) {
     return (
       <>
-        <h1 className="text-2xl font-semibold">Registrar compra</h1>
+        <h1 className="text-2xl font-semibold">Caja</h1>
         <p className={card}>
-          El programa de puntos no está activo, así que por ahora no se pueden registrar compras.{" "}
-          {membership.role === "owner" ? (
+          El programa de puntos no está activo y no hay recompensas activas, así que por ahora no hay nada que
+          registrar.{" "}
+          {isOwner ? (
             <Link href={`/panel/${merchantId}/programa`} className="font-medium underline underline-offset-4">
               Ir a Programa
             </Link>
@@ -61,11 +68,11 @@ async function Purchase({
   const selected = membershipId ? await getCustomer(merchantId, membershipId) : null;
 
   if (selected) {
-    const branches = await getBranches(merchantId);
+    const branches = canEarn ? await getBranches(merchantId) : [];
     const backHref = search ? `${base}?q=${encodeURIComponent(search)}` : base;
     return (
       <>
-        <h1 className="text-2xl font-semibold">Registrar compra</h1>
+        <h1 className="text-2xl font-semibold">Caja</h1>
         <section className={`${card} flex items-center justify-between gap-3`}>
           <div className="min-w-0">
             <p className="truncate text-lg font-semibold">{selected.fullName}</p>
@@ -78,18 +85,51 @@ async function Purchase({
             Cambiar cliente
           </Link>
         </section>
-        <section className={card}>
-          <PurchaseForm
-            action={recordPurchase.bind(null, merchantId)}
-            merchantId={merchantId}
-            membershipId={selected.membershipId}
-            customerName={selected.fullName}
-            currency={membership.currency}
-            rule={program}
-            branches={branches.map((branch) => ({ id: branch.id, name: branch.name }))}
-            // A new key on every render (also after each purchase, which refreshes the page).
-            idempotencyKey={crypto.randomUUID()}
-          />
+
+        <section className={`${card} flex flex-col gap-3`}>
+          <h2 className="font-semibold">Registrar compra</h2>
+          {canEarn && program ? (
+            <PurchaseForm
+              action={recordPurchase.bind(null, merchantId)}
+              merchantId={merchantId}
+              membershipId={selected.membershipId}
+              customerName={selected.fullName}
+              currency={membership.currency}
+              rule={program}
+              branches={branches.map((branch) => ({ id: branch.id, name: branch.name }))}
+              // A new key on every render (also after each purchase, which refreshes the page).
+              idempotencyKey={crypto.randomUUID()}
+            />
+          ) : (
+            <p className={mutedText}>
+              El programa está pausado: no se dan puntos por compras. Los clientes sí pueden canjear los que ya
+              tienen.
+            </p>
+          )}
+        </section>
+
+        <section className={`${card} flex flex-col gap-3`}>
+          <h2 className="font-semibold">Canjear recompensa</h2>
+          {rewards.length > 0 ? (
+            <RedeemList
+              action={redeemReward.bind(null, merchantId)}
+              membershipId={selected.membershipId}
+              customerName={selected.fullName}
+              balance={selected.pointsBalance}
+              currency={membership.currency}
+              rewards={rewards}
+              idempotencyKey={crypto.randomUUID()}
+            />
+          ) : (
+            <p className={mutedText}>
+              Este comercio aún no tiene recompensas activas.{" "}
+              {isOwner && (
+                <Link href={`/panel/${merchantId}/recompensas`} className="underline underline-offset-4">
+                  Crear recompensas
+                </Link>
+              )}
+            </p>
+          )}
         </section>
       </>
     );
@@ -98,7 +138,8 @@ async function Purchase({
   const results = await searchCustomers(merchantId, search);
   return (
     <>
-      <h1 className="text-2xl font-semibold">Registrar compra</h1>
+      <h1 className="text-2xl font-semibold">Caja</h1>
+      <p className={mutedText}>Busca al cliente para registrar su compra o canjear una recompensa.</p>
       <form action={base} className="flex flex-col gap-2 sm:flex-row">
         <label htmlFor="q" className="sr-only">
           Buscar cliente por nombre

@@ -9,5 +9,6 @@ Un ADR registra una decisión técnica importante: el contexto, la decisión y s
 | [0003](0003-supabase-como-codigo.md) | Esquema y configuración de Supabase como código | Aceptada |
 | [0004](0004-logica-pura-y-pruebas-unitarias.md) | Lógica pura en `rules.ts`, pruebas con Vitest y consultas de Supabase solo al momento de la visita | Aceptada |
 | [0005](0005-saldo-materializado-y-forma-del-ledger.md) | Saldo materializado y forma del ledger | Aceptada |
+| [0006](0006-canje-como-movimiento-del-ledger.md) | El canje es un movimiento del ledger (sin tabla `redemptions`) | Aceptada |
 
 Para una nueva decisión: copiar el formato de un ADR existente, numerar de forma consecutiva y añadirlo a esta tabla. Un ADR no se edita para cambiar la decisión: se crea uno nuevo que lo reemplaza.

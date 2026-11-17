@@ -54,8 +54,8 @@ async function CustomerDetail({ merchantId, membershipId }: { merchantId: string
         </div>
       </section>
 
-      <Link href={`/panel/${merchantId}/compra?cliente=${membershipId}`} className={primaryButton}>
-        Registrar compra
+      <Link href={`/panel/${merchantId}/caja?cliente=${membershipId}`} className={primaryButton}>
+        Abrir en caja
       </Link>
 
       <section className="flex flex-col gap-3">
@@ -65,10 +65,15 @@ async function CustomerDetail({ merchantId, membershipId }: { merchantId: string
           formatPoints={signed}
           emptyText="Todavía no tiene movimientos."
           renderActions={(transaction) =>
-            isOwner && transaction.type === "EARN" && !transaction.reversed ? (
+            isOwner && transaction.type !== "REVERSAL" && !transaction.reversed ? (
               <ReverseForm
                 action={reverseTransaction.bind(null, merchantId, transaction.id)}
-                summary={`compra de ${formatMoney(transaction.purchaseAmountMinor ?? 0, currency)} (${signed(transaction.points)})`}
+                kind={transaction.type === "EARN" ? "compra" : "canje"}
+                summary={
+                  transaction.type === "EARN"
+                    ? `compra de ${formatMoney(transaction.purchaseAmountMinor ?? 0, currency)} (${signed(transaction.points)})`
+                    : `${transaction.rewardName ?? "recompensa"} (${signed(-transaction.points)})`
+                }
                 idPrefix={`reverse-${transaction.id}`}
               />
             ) : null

@@ -1,6 +1,6 @@
 # Módulo 06 — Recompensas y canje
 
-- **Estado**: validado (2026-11-17)
+- **Estado**: implementado (2026-11-17), pendiente de prueba manual
 - **Fecha**: 2026-11-17
 
 ## Objetivo
@@ -148,6 +148,17 @@ Cambios en otros módulos:
   - recompensas públicas por código.
 - **Pruebas de humo** que envían los formularios de verdad: crear una recompensa, canjear, intentar canjear sin saldo y anular un canje.
 - **Manual en el navegador**: el dueño crea el catálogo, el cajero canjea, el dueño anula y el cliente ve su catálogo; la página pública muestra las recompensas.
+
+**Resultado automático (2026-11-17)**:
+- lint, typecheck y build sin errores;
+- `npm test` 29/29;
+- `verify:rls` 187/187 (32 nuevas: catálogo, canje, idempotencia, saldo insuficiente, recompensas inactivas o ajenas, canje con el programa pausado, copia del nombre y el costo, borrado bloqueado, anulación de canjes y saldo igual a la suma);
+- prueba de humo (script temporal, no versionado) que envía los formularios de verdad: 17/17. Cubre crear recompensas, nombre repetido, canjear en caja, anular el canje, desactivar, el catálogo de la billetera y la página pública.
+- Sin regresiones en las pruebas de humo de los Módulos 2 a 5 (la ruta de caja cambió de `/compra` a `/caja`).
+
+Decisión técnica en el [ADR 0006](../architecture/adr/0006-canje-como-movimiento-del-ledger.md).
+
+Falta la prueba manual en el navegador.
 
 ## Preguntas abiertas
 

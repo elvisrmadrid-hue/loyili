@@ -23,8 +23,8 @@ const LEDGER_ERRORS: Record<string, { field?: string; message: string }> = {
   invalid_amount: { field: "amount", message: "Revisa el monto de la compra." },
   points_overflow: { field: "amount", message: "Esta compra daría demasiados puntos. Revisa el monto." },
   idempotency_conflict: { message: "Esta compra ya se registró. Recarga la página antes de registrar otra." },
-  already_reversed: { message: "Esta compra ya fue anulada." },
-  not_reversible: { message: "Solo se pueden anular compras." },
+  already_reversed: { message: "Este movimiento ya fue anulado." },
+  not_reversible: { message: "Solo se pueden anular compras y canjes." },
   insufficient_balance: {
     message: "El cliente ya no tiene suficientes puntos para anular esta compra (el saldo no puede quedar negativo).",
   },
@@ -104,8 +104,13 @@ export async function reverseTransaction(
   if (error) return ledgerError(error, "reverse_transaction", values);
 
   const result = (data as { reversed_points: number; balance: number }[])[0];
+  const points = formatPoints(Math.abs(result.reversed_points), membership.currency);
+  const balance = formatPoints(result.balance, membership.currency);
   refresh();
   return {
-    message: `Compra anulada: ${formatPoints(Math.abs(result.reversed_points), membership.currency)} descontados. Nuevo saldo: ${formatPoints(result.balance, membership.currency)}.`,
+    message:
+      result.reversed_points < 0
+        ? `Compra anulada: ${points} descontados. Nuevo saldo: ${balance}.`
+        : `Canje anulado: ${points} devueltos al cliente. Nuevo saldo: ${balance}.`,
   };
 }

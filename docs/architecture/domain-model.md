@@ -14,10 +14,8 @@ profiles ──────────────┬────────�
     │              merchants ◄────────────────────┘
     │                  │ 1:N
     │      ┌───────────┼──────────────┬─────────────┐
-    │   branches   loyalty_programs  rewards     point_transactions (ledger)
-    │                                  │              ▲
-    │                                  │ 1:N          │ 1:1
-    │                             redemptions ────────┘
+    │   branches   loyalty_programs  rewards ──► point_transactions (ledger)
+    │                                        (REDEEM: canje de una recompensa)
 ```
 
 ## Entidades
@@ -32,8 +30,8 @@ profiles ──────────────┬────────�
 | `loyalty_programs` | Programa del comercio (uno como máximo): "X puntos por cada Y gastado", redondeando hacia abajo, y estado activo/pausado. Se pausa solo al cambiar la moneda. | 3 |
 | `memberships` | Cliente inscrito en un comercio. Única por par (cliente, comercio). Se crea solo con `join_merchant` (enlace o QR del comercio). | 4 |
 | `point_transactions` | **Ledger** inmutable: cada movimiento de puntos de una membresía (`EARN` y `REVERSAL` desde el Módulo 5), con copia de la regla aplicada. | 5 |
-| `rewards` | Recompensas del comercio con su costo en puntos. | 6 |
-| `redemptions` | Canje de una recompensa por un cliente, con estado. | 6 |
+| `rewards` | Recompensas del comercio con su costo en puntos (activas o inactivas). Una recompensa canjeada no se puede eliminar. | 6 |
+| ~~`redemptions`~~ | No existe: un canje es un movimiento `REDEEM` del ledger ([ADR 0006](adr/0006-canje-como-movimiento-del-ledger.md)). | 6 |
 
 ## Ledger de puntos
 
@@ -63,12 +61,9 @@ Columnas previstas: `id`, `merchant_id`, `membership_id`, `type`, `points` (ente
 8. Puntos de una compra = `floor(monto / monto_del_bloque) × puntos_por_bloque`: solo cuentan los bloques completos. Cambiar la regla solo afecta a compras futuras. Sin programa, o con el programa pausado, no se acreditan puntos (Módulo 5).
 9. Un cliente solo puede unirse a un comercio con el programa activo. El dueño y el personal no pueden ser clientes del comercio en el que trabajan (sí de otros).
 10. El comercio solo ve el nombre de sus clientes y desde cuándo lo son; nunca su email.
-11. Solo el dueño anula compras, con motivo obligatorio, una vez por compra y sin dejar el saldo negativo. Una sucursal con compras no se puede eliminar.
+11. Solo el dueño anula compras y canjes, con motivo obligatorio, una vez por movimiento y sin dejar el saldo negativo. Una sucursal con compras no se puede eliminar.
+12. El canje lo hace el personal en caja, una unidad por canje. Pausar el programa detiene la acumulación, no los canjes. Cambiar el costo de una recompensa solo afecta a los canjes futuros.
 
-## Estados del canje
+## Canje
 
-```
-pending ──► completed
-   │
-   └──────► cancelled  (genera REVERSAL si ya se descontaron puntos)
-```
+El canje se registra al momento en caja como un movimiento `REDEEM`; su anulación es un `REVERSAL` que devuelve los puntos. No hay estados pendientes ([ADR 0006](adr/0006-canje-como-movimiento-del-ledger.md)).

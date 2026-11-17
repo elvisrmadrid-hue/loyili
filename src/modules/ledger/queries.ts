@@ -8,6 +8,7 @@ type TransactionRow = {
   points: number;
   purchase_amount_minor: number | null;
   currency: string;
+  reward_name: string | null;
   note: string | null;
   created_at: string;
   reference_id: string | null;
@@ -29,7 +30,7 @@ export async function getTransactions(
 ): Promise<Transaction[]> {
   if (!z.uuid().safeParse(membershipId).success) return [];
 
-  const columns = "id, type, points, purchase_amount_minor, currency, note, created_at, reference_id";
+  const columns = "id, type, points, purchase_amount_minor, currency, reward_name, note, created_at, reference_id";
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("point_transactions")
@@ -53,11 +54,12 @@ export async function getTransactions(
     points: row.points,
     purchaseAmountMinor: row.purchase_amount_minor === null ? null : Number(row.purchase_amount_minor),
     currency: row.currency,
+    rewardName: row.reward_name,
     note: row.note,
     createdAt: row.created_at,
     branchName: row.branch?.name ?? null,
     authorName: row.author?.full_name ?? null,
-    reversed: row.type === "EARN" && reversedIds.has(row.id),
+    reversed: row.type !== "REVERSAL" && reversedIds.has(row.id),
   }));
 }
 
