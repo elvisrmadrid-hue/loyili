@@ -1,6 +1,6 @@
 # Módulo 06 — Recompensas y canje
 
-- **Estado**: implementado (2026-11-17), pendiente de prueba manual
+- **Estado**: verificado (2026-11-17)
 - **Fecha**: 2026-11-17
 
 ## Objetivo
@@ -123,19 +123,19 @@ Cambios en otros módulos:
 
 ## Criterios de aceptación
 
-- [ ] La migración se aplica con `npx supabase db push --remote` y crea `rewards` con RLS activado.
-- [ ] El dueño crea, edita, activa y desactiva recompensas. No se permiten nombres repetidos ni costos fuera de rango.
-- [ ] Una recompensa sin canjes se puede eliminar; una con canjes no (se explica y se ofrece desactivarla).
-- [ ] El cajero busca al cliente, ve qué recompensas le alcanzan y canjea una; el saldo baja exactamente su costo.
-- [ ] No se puede canjear sin saldo suficiente, ni una recompensa inactiva o de otro comercio (ni desde la pantalla ni desde la API).
-- [ ] Enviar dos veces el mismo canje (misma clave) lo registra una sola vez.
-- [ ] El historial muestra el canje con el nombre y el costo del momento, aunque después cambien.
-- [ ] El dueño anula un canje con motivo y los puntos vuelven al cliente; el personal no puede anular.
-- [ ] El cliente ve el catálogo en su billetera, con lo que le falta para cada recompensa.
-- [ ] La página pública muestra las recompensas activas sin iniciar sesión.
-- [ ] El personal no puede crear, editar ni eliminar recompensas; un cliente no ve las inactivas; un comercio no ve las recompensas de otro (comprobado con script).
-- [ ] El saldo sigue coincidiendo con la suma de los movimientos (comprobado con script).
-- [ ] `npm test`, `npm run lint`, `npm run typecheck`, `npm run build` y `npm run verify:rls` pasan.
+- [x] La migración se aplica con `npx supabase db push --remote` y crea `rewards` con RLS activado.
+- [x] El dueño crea, edita, activa y desactiva recompensas. No se permiten nombres repetidos ni costos fuera de rango.
+- [x] Una recompensa sin canjes se puede eliminar; una con canjes no (se explica y se ofrece desactivarla).
+- [x] El cajero busca al cliente, ve qué recompensas le alcanzan y canjea una; el saldo baja exactamente su costo.
+- [x] No se puede canjear sin saldo suficiente, ni una recompensa inactiva o de otro comercio (ni desde la pantalla ni desde la API).
+- [x] Enviar dos veces el mismo canje (misma clave) lo registra una sola vez.
+- [x] El historial muestra el canje con el nombre y el costo del momento, aunque después cambien.
+- [x] El dueño anula un canje con motivo y los puntos vuelven al cliente; el personal no puede anular.
+- [x] El cliente ve el catálogo en su billetera, con lo que le falta para cada recompensa.
+- [x] La página pública muestra las recompensas activas sin iniciar sesión.
+- [x] El personal no puede crear, editar ni eliminar recompensas; un cliente no ve las inactivas; un comercio no ve las recompensas de otro (comprobado con script).
+- [x] El saldo sigue coincidiendo con la suma de los movimientos (comprobado con script).
+- [x] `npm test`, `npm run lint`, `npm run typecheck`, `npm run build` y `npm run verify:rls` pasan.
 
 ## Verificación
 
@@ -158,7 +158,7 @@ Cambios en otros módulos:
 
 Decisión técnica en el [ADR 0006](../architecture/adr/0006-canje-como-movimiento-del-ledger.md).
 
-Falta la prueba manual en el navegador.
+**Resultado manual (2026-11-17)**: el usuario recorrió el catálogo, el canje en caja, la anulación del canje, la desactivación, el canje con el programa pausado, el catálogo de la billetera y la página pública. Todo correcto.
 
 ## Preguntas abiertas
 

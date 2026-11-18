@@ -12,7 +12,7 @@ Estados: ⬜ pendiente · 🟦 en curso · 🟨 en verificación · ✅ completa
 | 3 | **Programa de fidelización** | El comercio configura su regla de acumulación | ✅ |
 | 4 | **Clientes y membresías** | Un cliente queda asociado a un comercio; el comercio ve su lista de clientes | ✅ |
 | 5 | **Ledger de puntos: acumulación** | El personal registra una compra y se acreditan los puntos correctos; saldo e historial correctos (con pruebas automáticas) | ✅ |
-| 6 | **Recompensas y canje** | Catálogo de recompensas; canje que descuenta puntos y nunca deja saldo negativo | 🟨 |
+| 6 | **Recompensas y canje** | Catálogo de recompensas; canje que descuenta puntos y nunca deja saldo negativo | ✅ |
 | 7 | **Identificación por QR** | El cliente muestra su QR; el personal lo escanea para acreditar o canjear | ⬜ |
 | 8 | **Billetera PWA** | La billetera se instala en el teléfono y se ve bien en móvil | ⬜ |
 | 9 | **Reportes del comercio** | Métricas básicas (clientes activos, puntos emitidos/canjeados) | ⬜ |
@@ -60,3 +60,4 @@ Estados: ⬜ pendiente · 🟦 en curso · 🟨 en verificación · ✅ completa
 ### Módulo 6 — Recompensas y canje
 - 2026-11-17: especificación validada ([06-recompensas-canje.md](modules/06-recompensas-canje.md)). Canje en caja por el personal; anulación solo del dueño con motivo; sin stock ni fechas; catálogo visible para clientes y en la página pública; con el programa pausado se puede seguir canjeando.
 - 2026-11-17: implementado. Migración `create_rewards` aplicada (catálogo con RLS, movimiento `REDEEM`, `redeem_reward`, anulación de canjes, `get_public_rewards`). Pestañas "Recompensas" y "Caja" (compra y canje), canjes en el historial, catálogo en la billetera y en la página pública. `verify:rls` 187/187. Decisión en [ADR 0006](architecture/adr/0006-canje-como-movimiento-del-ledger.md). Pendiente: prueba manual del usuario.
+- 2026-11-17: prueba manual del usuario correcta. Módulo cerrado.
