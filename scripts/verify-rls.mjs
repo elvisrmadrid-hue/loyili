@@ -1,10 +1,10 @@
 // Verifies Row Level Security and privileges (profiles, merchants, members,
-// branches, invitations) against the linked Supabase project, acting as real
+// branches, invitations, programs, customers, ledger, rewards, customer codes) against the linked Supabase project, acting as real
 // users through the public Data API.
 //
 // Usage:  npm run verify:rls
 // Reads NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY from .env.local.
-// Never prints keys. Creates 3 throwaway users per run (sign-up is public);
+// Never prints keys. Creates 5 throwaway users per run (sign-up is public);
 // they can be deleted from the Supabase dashboard (Authentication > Users).
 
 import { createClient } from "@supabase/supabase-js";
@@ -854,6 +854,110 @@ let redemptionId;
     summary.push(`${sum}/${balance}`);
   }
   check(consistent, "every balance still equals the sum of its movements", summary.join(" "));
+}
+
+// ===========================================================================
+// Module 7 — customer codes (QR at the register)
+// ===========================================================================
+console.log("\n-- Module 7: customer codes --");
+const e = await signUp("e", "Cliente E");
+console.log(`info  created test user ${e.email}`);
+const issue = async (client) => (await client.rpc("issue_customer_code")).data?.[0];
+const resolve = (client, merchantId, code) =>
+  client.rpc("resolve_customer_code", { p_merchant_id: merchantId, p_code: code });
+const enroll = (client, merchantId, code) =>
+  client.rpc("enroll_customer_by_code", { p_merchant_id: merchantId, p_code: code });
+
+// 27. Issuing codes and the table nobody can touch
+const dCode = await issue(d.client);
+{
+  const anonIssue = await newClient().rpc("issue_customer_code");
+  check(Boolean(anonIssue.error), "anon cannot get a customer code", anonIssue.error?.code ?? "allowed!");
+
+  check(/^[A-HJ-NP-Z2-9]{8}$/.test(dCode?.code ?? ""), "a code has 8 symbols without look-alikes", dCode?.code);
+  const minutes = (new Date(dCode?.expires_at) - Date.now()) / 60000;
+  check(dCode?.valid_seconds === 300 && minutes > 4.5 && minutes <= 5.1, "a code is valid for 5 minutes", `${dCode?.valid_seconds}s, ${minutes.toFixed(2)} min`);
+
+  for (const [who, client] of [["the customer", d.client], ["the owner", a.client], ["anon", newClient()]]) {
+    const read = await client.from("customer_codes").select("*");
+    check(Boolean(read.error) || read.data.length === 0, `${who} cannot read customer_codes`, rowsOf(read));
+  }
+  const write = await d.client.from("customer_codes").insert({ user_id: d.id, code_hash: "x", expires_at: new Date().toISOString() });
+  check(Boolean(write.error), "nobody can write customer_codes directly", write.error?.code ?? "allowed!");
+}
+
+// 28. Resolving a code at the register
+const eCode = await issue(e.client);
+const cCode = await issue(c.client);
+{
+  const byOwner = await resolve(a.client, m1Id, dCode.code);
+  const row = byOwner.data?.[0];
+  check(row?.status === "customer" && row.membership_id === dIn1 && row.full_name === "Cliente D", "the owner resolves a customer's code to their membership", byOwner.error?.message ?? JSON.stringify(row));
+
+  const typed = `${dCode.code.slice(0, 4).toLowerCase()}-${dCode.code.slice(4).toLowerCase()}`;
+  const byStaff = await resolve(c.client, m1Id, typed);
+  check(byStaff.data?.[0]?.membership_id === dIn1, "staff resolve it too, typed in lowercase with a dash", byStaff.error?.message ?? JSON.stringify(byStaff.data?.[0]));
+
+  const otherMerchant = await resolve(b.client, m2Id, dCode.code);
+  check(otherMerchant.data?.[0]?.membership_id === dIn2, "the same code works at every merchant the person belongs to", JSON.stringify(otherMerchant.data?.[0]));
+
+  const newcomer = await resolve(a.client, m1Id, eCode.code);
+  const n = newcomer.data?.[0];
+  check(n?.status === "not_customer" && n.full_name === "Cliente E" && n.membership_id === null, "a non-customer's code shows only their name", JSON.stringify(n));
+
+  const colleague = await resolve(a.client, m1Id, cCode.code);
+  check(colleague.data?.[0]?.status === "member", "a staff member's code is recognized as staff", JSON.stringify(colleague.data?.[0]));
+
+  const unknown = await resolve(a.client, m1Id, "ABCDEFGH");
+  const u = unknown.data?.[0];
+  check(u?.status === "expired_or_unknown" && u.full_name === null && u.membership_id === null, "an unknown code reveals nothing", JSON.stringify(u));
+
+  const byCustomer = await resolve(d.client, m1Id, eCode.code);
+  check(byCustomer.error?.message === "not_allowed", "customers cannot resolve codes", byCustomer.error?.message ?? "allowed!");
+
+  const foreign = await resolve(b.client, m1Id, dCode.code);
+  check(foreign.error?.message === "not_allowed", "another merchant cannot resolve codes for this one", foreign.error?.message ?? "allowed!");
+
+  const anonResolve = await resolve(newClient(), m1Id, dCode.code);
+  check(Boolean(anonResolve.error), "anon cannot resolve codes", anonResolve.error?.code ?? "allowed!");
+
+  const again = await resolve(a.client, m1Id, dCode.code);
+  check(again.data?.[0]?.status === "customer", "a code can be used more than once while valid", JSON.stringify(again.data?.[0]));
+
+  const renewed = await issue(d.client);
+  const old = await resolve(a.client, m1Id, dCode.code);
+  const fresh = await resolve(a.client, m1Id, renewed.code);
+  check(old.data?.[0]?.status === "expired_or_unknown" && fresh.data?.[0]?.status === "customer", "a new code replaces the previous one", `${old.data?.[0]?.status} / ${fresh.data?.[0]?.status}`);
+}
+
+// 29. Enrolling from the register
+{
+  const byCustomer = await enroll(d.client, m1Id, eCode.code);
+  check(byCustomer.error?.message === "not_allowed", "customers cannot enroll others", byCustomer.error?.message ?? "allowed!");
+
+  const unknown = await enroll(a.client, m1Id, "ABCDEFGH");
+  check(unknown.error?.message === "code_invalid", "an unknown code cannot be enrolled", unknown.error?.message ?? "allowed!");
+
+  const colleague = await enroll(a.client, m1Id, cCode.code);
+  check(colleague.error?.message === "merchant_member", "staff cannot be enrolled as customers", colleague.error?.message ?? "allowed!");
+
+  await b.client.from("loyalty_programs").update({ is_active: false }).eq("merchant_id", m2Id);
+  const paused = await enroll(b.client, m2Id, eCode.code);
+  check(paused.error?.message === "program_not_active", "nobody is enrolled while the program is paused", paused.error?.message ?? "allowed!");
+  await b.client.from("loyalty_programs").update({ is_active: true }).eq("merchant_id", m2Id);
+
+  const byStaff = await enroll(c.client, m1Id, eCode.code);
+  const eIn1 = await membershipOf(a.client, m1Id, e.id);
+  check(!byStaff.error && byStaff.data === eIn1, "staff enroll a new customer with their code", byStaff.error?.message ?? `${byStaff.data} vs ${eIn1}`);
+
+  const twice = await enroll(a.client, m1Id, eCode.code);
+  check(twice.data === eIn1, "enrolling twice returns the same membership", twice.error?.message ?? twice.data);
+
+  const now = await resolve(a.client, m1Id, eCode.code);
+  check(now.data?.[0]?.status === "customer", "after enrolling, the code opens the customer", JSON.stringify(now.data?.[0]));
+
+  const wallet = await e.client.from("memberships").select("merchant_id");
+  check(wallet.data?.length === 1 && wallet.data[0].merchant_id === m1Id, "the new customer sees the merchant in their wallet", rowsOf(wallet));
 }
 
 // 12. Owner managing the team

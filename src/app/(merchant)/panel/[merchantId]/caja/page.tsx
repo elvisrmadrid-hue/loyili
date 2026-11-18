@@ -2,20 +2,26 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { getCustomer, searchCustomers, type Customer } from "@/modules/customers";
+import { enrollCustomer, identifyCustomer } from "@/modules/identification";
 import { recordPurchase } from "@/modules/ledger";
 import { formatPoints, getLoyaltyProgram } from "@/modules/loyalty";
 import { getBranches } from "@/modules/merchants";
 import { getActiveRewards, redeemReward } from "@/modules/rewards";
+import { FormAlert } from "@/components/ui/form-alert";
 import { Loading } from "@/components/ui/loading";
 import { LocalDate } from "@/components/ui/local-date";
 import { card, mutedText, secondaryButton } from "@/components/ui/styles";
 import { loadMembership } from "../load-membership";
+import { IdentifyForm } from "./identify-form";
 import { PurchaseForm } from "./purchase-form";
 import { RedeemList } from "./redeem-list";
 
 export const metadata: Metadata = { title: "Caja" };
 
-/** Cash register: pick a customer once, then record a purchase or redeem a reward. */
+/**
+ * Cash register: identify the customer once (their wallet code, scanned or typed, or a name
+ * search), then record a purchase or redeem a reward.
+ */
 export default function CashRegisterPage({ params, searchParams }: PageProps<"/panel/[merchantId]/caja">) {
   return (
     <Suspense fallback={<Loading />}>
@@ -24,6 +30,7 @@ export default function CashRegisterPage({ params, searchParams }: PageProps<"/p
           merchantId={merchantId}
           search={typeof query.q === "string" ? query.q : ""}
           membershipId={typeof query.cliente === "string" ? query.cliente : null}
+          justEnrolled={query.nuevo === "1"}
         />
       ))}
     </Suspense>
@@ -34,10 +41,12 @@ async function CashRegister({
   merchantId,
   search,
   membershipId,
+  justEnrolled,
 }: {
   merchantId: string;
   search: string;
   membershipId: string | null;
+  justEnrolled: boolean;
 }) {
   const membership = await loadMembership(merchantId);
   const [program, rewards] = await Promise.all([getLoyaltyProgram(merchantId), getActiveRewards(merchantId)]);
@@ -73,6 +82,9 @@ async function CashRegister({
     return (
       <>
         <h1 className="text-2xl font-semibold">Caja</h1>
+        {justEnrolled && (
+          <FormAlert message={`¡Listo! ${selected.fullName} ya es cliente. Registra su compra para darle sus primeros puntos.`} />
+        )}
         <section className={`${card} flex items-center justify-between gap-3`}>
           <div className="min-w-0">
             <p className="truncate text-lg font-semibold">{selected.fullName}</p>
@@ -139,7 +151,13 @@ async function CashRegister({
   return (
     <>
       <h1 className="text-2xl font-semibold">Caja</h1>
-      <p className={mutedText}>Busca al cliente para registrar su compra o canjear una recompensa.</p>
+      <IdentifyForm
+        identifyAction={identifyCustomer.bind(null, merchantId)}
+        enrollAction={enrollCustomer.bind(null, merchantId)}
+        canEnroll={canEarn}
+      />
+
+      <h2 className="font-semibold">O busca por nombre</h2>
       <form action={base} className="flex flex-col gap-2 sm:flex-row">
         <label htmlFor="q" className="sr-only">
           Buscar cliente por nombre
@@ -161,12 +179,12 @@ async function CashRegister({
       {membershipId && <p className={mutedText}>Ese cliente no existe en este comercio. Búscalo de nuevo.</p>}
 
       <section className="flex flex-col gap-2">
-        <h2 className="font-semibold">{search ? `Resultados para «${search}»` : "Clientes recientes"}</h2>
+        <h3 className="font-medium">{search ? `Resultados para «${search}»` : "Clientes recientes"}</h3>
         {results.length === 0 ? (
           <p className={mutedText}>
             {search
-              ? "No hay clientes con ese nombre. Si es nuevo, primero debe unirse con el enlace o el QR del comercio."
-              : "Aún no tienes clientes. Se unen con el enlace o el QR de la pestaña Clientes."}
+              ? "No hay clientes con ese nombre. Si es nuevo, pídele su código («Mi código» en su billetera) y únelo desde arriba."
+              : "Aún no tienes clientes. Se unen con el enlace o el QR de la pestaña Clientes, o aquí con su código."}
           </p>
         ) : (
           <CustomerResults results={results} base={base} search={search} currency={membership.currency} />

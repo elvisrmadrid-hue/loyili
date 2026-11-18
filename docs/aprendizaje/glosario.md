@@ -72,6 +72,10 @@ Conceptos técnicos que aparecen durante el desarrollo de Loyili, explicados en 
 
 **Sesión** — El "pase" que recibe el navegador tras iniciar sesión, para no pedir la contraseña en cada página. En Loyili se guarda en *cookies* y `proxy.ts` lo renueva antes de que caduque.
 
+**Código temporal** — Código que caduca solo al cabo de poco tiempo, como los que mandan los bancos por SMS. No hace falta impedir que alguien lo copie: pasado ese tiempo, la copia no sirve. El QR de "Mi código" vale 5 minutos.
+
+**Contexto seguro (HTTPS)** — El navegador solo deja usar la cámara, el micrófono o la ubicación en páginas con HTTPS (o en `localhost`, tu propia computadora). Así una web cualquiera sin cifrar no puede espiarte. Por eso el escaneo desde el teléfono llegará con la publicación.
+
 **Open redirect** — Fallo de seguridad en el que un enlace como `/login?next=https://sitio-malo.com` lleva al usuario a otra web tras iniciar sesión. Se evita aceptando solo rutas internas.
 
 ## Herramientas

@@ -10,7 +10,7 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { Loading } from "@/components/ui/loading";
 import { LocalDate } from "@/components/ui/local-date";
 import { ProgramStatus } from "@/components/ui/program-status";
-import { card, mutedText } from "@/components/ui/styles";
+import { card, mutedText, primaryButton } from "@/components/ui/styles";
 
 export const metadata: Metadata = { title: "Mi billetera" };
 
@@ -39,7 +39,12 @@ async function WalletContent({ searchParams }: Pick<PageProps<"/wallet">, "searc
     <>
       <AppHeader userName={name} signOutAction={signOut} />
       <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-6">
-        <h1 className="text-2xl font-semibold">Mis programas</h1>
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-2xl font-semibold">Mis programas</h1>
+          <Link href="/wallet/codigo" className={primaryButton}>
+            Mi código
+          </Link>
+        </div>
 
         {joined && <FormAlert message={`¡Listo! Ya eres cliente de «${joined.merchantName}».`} />}
 
@@ -48,7 +53,7 @@ async function WalletContent({ searchParams }: Pick<PageProps<"/wallet">, "searc
             <p className="font-medium">Todavía no te has unido a ningún programa.</p>
             <p className={mutedText}>
               Escanea el código QR de un comercio con la cámara de tu teléfono (o abre su enlace) para
-              unirte y empezar a ganar puntos.
+              unirte y empezar a ganar puntos. También puedes mostrar «Mi código» en caja y que te unan ahí.
             </p>
           </div>
         ) : (

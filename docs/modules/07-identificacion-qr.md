@@ -1,6 +1,6 @@
-﻿# Módulo 07 — Identificación por QR
+# Módulo 07 — Identificación por QR
 
-- **Estado**: validado (2026-11-17)
+- **Estado**: implementado (2026-11-17), pendiente de prueba manual
 - **Fecha**: 2026-11-17
 
 ## Objetivo
@@ -112,6 +112,20 @@ Migración: `supabase/migrations/<timestamp>_create_customer_codes.sql`
 
   Envían los formularios de verdad.
 - **Manual en el navegador**: ver "Riesgos" para la cámara.
+
+**Resultado automático (2026-11-17)**:
+- lint, typecheck y build sin errores;
+- `npm test` 36/36 (7 nuevas: formato del código corto y de la cuenta atrás);
+- `verify:rls` 213/213 (26 nuevas: emitir códigos, tabla inaccesible, resolver como dueño o personal, mismo código en varios comercios, persona no cliente, personal, código desconocido, clientes y otros comercios sin acceso, reutilización durante su vigencia, reemplazo del código anterior y unión desde caja con todas sus reglas);
+- prueba de humo (script temporal, no versionado) contra el build de producción: 18/18. Cubre "Mi código", escribir el código en caja, códigos caducados, desconocidos o con mal formato, el código del dueño, unir a un cliente nuevo y el programa pausado;
+- sin regresiones en las pruebas de humo de los Módulos 2 a 6;
+- el servidor de desarrollo responde desde la dirección de red de la computadora (`allowedDevOrigins` se rellena solo con sus direcciones privadas).
+
+**Hallazgo sobre los formularios sin JavaScript**: el `InvariantError` que veníamos anotando desde el Módulo 2 es un fallo de Next.js **solo en modo desarrollo** (`node_modules/next/dist/server/request/cookies.js` compara el objeto de cookies con uno distinto del que acaba de elegir). En producción no ocurre. Además, sin JavaScript la página vuelve a mostrarse **sin el mensaje** de la acción (el mensaje viaja en los datos de la página, pero no se pinta). Esto afecta a todos los formularios desde el Módulo 2, no solo a este. Con JavaScript, que es el uso real, todo funciona. Por eso la prueba de humo llama a las acciones como lo hace el navegador con JavaScript.
+
+Decisión técnica en el [ADR 0007](../architecture/adr/0007-codigo-temporal-del-cliente.md).
+
+Falta la prueba manual en el navegador.
 
 ## Riesgos
 
