@@ -1,6 +1,6 @@
 # Módulo 08 — Billetera PWA
 
-- **Estado**: validado (2026-11-19)
+- **Estado**: implementado (2026-11-19), pendiente de prueba manual
 - **Fecha**: 2026-11-19
 
 ## Objetivo
@@ -92,6 +92,20 @@ Lógica pura en `src/lib/device.ts`: `installPlatform(userAgent)` devuelve `ios`
   - ver las pantallas en modo teléfono: en el navegador, F12 → icono de móvil;
   - abrir la billetera en el teléfono por la red local para ver el diseño (sin instalar);
   - simular "sin conexión" desde las herramientas del navegador.
+
+**Resultado automático (2026-11-19)**:
+- lint, typecheck y build sin errores;
+- `npm test` 41/41 (5 nuevas: detección de iPhone, iPad, Android y otros);
+- `verify:rls` 213/213 (sin cambios en la base de datos).
+- Contra el build de producción:
+  - `/manifest.webmanifest` responde como `application/manifest+json`, con `start_url` `/inicio`, `display` `standalone` y 3 íconos;
+  - los íconos responden como PNG con su tamaño exacto (192, 512, maskable 512, 32 y 180 de iPhone);
+  - la página incluye el manifiesto, el ícono de iPhone, el color de barra claro y oscuro y `viewport-fit=cover`.
+- Pruebas de humo de los Módulos 2 a 7 contra producción: todas pasan.
+- Repaso móvil: las pantallas ya usaban columnas en móvil, textos recortados y campos de 16 px. Se agrandaron a 44 px de alto los botones pequeños de tocar: "Cerrar sesión", "Quitar"/"Revocar"/"Eliminar", "Editar", "Anular" y las pestañas del panel.
+- Se eliminó `src/app/favicon.ico`, el logo de Next.js que venía con la plantilla; ahora la pestaña usa el ícono de Loyili.
+
+Falta la prueba manual en el navegador.
 
 ## Riesgos
 

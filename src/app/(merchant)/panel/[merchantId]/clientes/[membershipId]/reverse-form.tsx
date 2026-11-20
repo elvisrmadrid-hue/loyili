@@ -21,7 +21,7 @@ export function ReverseForm({ action, summary, kind, idPrefix }: ReverseFormProp
 
   return (
     <details className="rounded-lg bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
-      <summary className="cursor-pointer text-sm font-medium text-red-600 dark:text-red-400">Anular {kind}</summary>
+      <summary className="cursor-pointer py-2 text-sm font-medium text-red-600 dark:text-red-400">Anular {kind}</summary>
       <form action={formAction} className="flex flex-col gap-3 pt-3" noValidate>
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
           {kind === "compra"

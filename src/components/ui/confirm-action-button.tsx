@@ -31,7 +31,7 @@ function Button({ label, pendingLabel }: { label: string; pendingLabel: string }
     <button
       type="submit"
       disabled={pending}
-      className="rounded-full px-3 py-1 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-60 dark:text-red-400 dark:hover:bg-red-950"
+      className="inline-flex min-h-11 items-center rounded-full px-3 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-60 dark:text-red-400 dark:hover:bg-red-950"
     >
       {pending ? pendingLabel : label}
     </button>

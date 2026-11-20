@@ -37,7 +37,8 @@ function redirectKeepingCookies(url: URL, from: NextResponse) {
 
 export const config = {
   matcher: [
-    // Everything except Next.js internals and static files (images, icons, etc.).
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    // Everything except Next.js internals, static files (images, icons, etc.), the app
+    // manifest and the generated app icons (/icon, /apple-icon, /icons/*).
+    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|icon|apple-icon|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

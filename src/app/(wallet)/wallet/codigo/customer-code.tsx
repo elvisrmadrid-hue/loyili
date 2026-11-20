@@ -77,6 +77,34 @@ export function CustomerCode({ issueAction }: CustomerCodeProps) {
     };
   }, [renew]);
 
+  // Keep the screen on while the code is shown (so it does not go dark while being scanned).
+  // Not every browser allows it (it needs HTTPS or localhost): then nothing happens.
+  useEffect(() => {
+    let lock: WakeLockSentinel | null = null;
+    let active = true;
+    const acquire = () => {
+      if (!("wakeLock" in navigator) || document.visibilityState !== "visible") return;
+      navigator.wakeLock.request("screen").then(
+        (sentinel) => {
+          if (active) lock = sentinel;
+          else void sentinel.release();
+        },
+        () => {}, // Refused (battery saver, permissions…): the screen just behaves as usual.
+      );
+    };
+    // The browser releases the lock when the page is hidden; ask again when it comes back.
+    const onVisible = () => {
+      if (document.visibilityState === "visible") acquire();
+    };
+    acquire();
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      active = false;
+      document.removeEventListener("visibilitychange", onVisible);
+      void lock?.release();
+    };
+  }, []);
+
   if (!code) {
     return (
       <section className={`${card} flex flex-col items-center gap-4 text-center`}>

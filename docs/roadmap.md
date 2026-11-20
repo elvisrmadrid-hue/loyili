@@ -14,7 +14,7 @@ Estados: ⬜ pendiente · 🟦 en curso · 🟨 en verificación · ✅ completa
 | 5 | **Ledger de puntos: acumulación** | El personal registra una compra y se acreditan los puntos correctos; saldo e historial correctos (con pruebas automáticas) | ✅ |
 | 6 | **Recompensas y canje** | Catálogo de recompensas; canje que descuenta puntos y nunca deja saldo negativo | ✅ |
 | 7 | **Identificación por QR** | El cliente muestra su QR; el personal lo escanea para acreditar o canjear | ✅ |
-| 8 | **Billetera PWA** | La billetera se instala en el teléfono y se ve bien en móvil | ⬜ |
+| 8 | **Billetera PWA** | La billetera se instala en el teléfono y se ve bien en móvil | 🟨 |
 | 9 | **Reportes del comercio** | Métricas básicas (clientes activos, puntos emitidos/canjeados) | ⬜ |
 | 10 | **Despliegue** | La aplicación publicada en internet (p. ej. Vercel + Supabase en producción) | ⬜ |
 | 11+ | Notificaciones, administración de la plataforma, niveles, etc. | — | ⬜ |
@@ -66,3 +66,7 @@ Estados: ⬜ pendiente · 🟦 en curso · 🟨 en verificación · ✅ completa
 - 2026-11-17: especificación validada ([07-identificacion-qr.md](modules/07-identificacion-qr.md)). Código temporal de 5 minutos que se renueva solo, un código por persona, código corto de 8 caracteres, unión de clientes nuevos desde caja.
 - 2026-11-17: implementado. Migración `create_customer_codes` aplicada (tabla sin acceso directo, `issue_customer_code`, `resolve_customer_code`, `enroll_customer_by_code`). Pantalla "Mi código" en la billetera; en caja, escanear QR (jsQR), escribir el código y "Unirlo al programa". `npm test` 36/36, `verify:rls` 213/213. Decisión en [ADR 0007](architecture/adr/0007-codigo-temporal-del-cliente.md). Pendiente: prueba manual del usuario.
 - 2026-11-19: prueba manual del usuario correcta. Corregido un caso: al volver a "Mi código" se veía una copia guardada con el código anterior; ahora el navegador pide siempre un código nuevo. Módulo cerrado.
+
+### Módulo 8 — Billetera PWA
+- 2026-11-19: especificación validada ([08-billetera-pwa.md](modules/08-billetera-pwa.md)). Una sola app que abre en `/inicio`, ícono provisional (sin logo todavía), sin modo sin conexión ni service worker, tarjeta para instalar, pantalla encendida en "Mi código".
+- 2026-11-19: implementado. Manifiesto, íconos generados por código, color de barra y márgenes seguros, tarjeta "Instala Loyili", aviso "Sin conexión", Wake Lock en "Mi código" y botones de 44 px. `npm test` 41/41. Pendiente: prueba manual del usuario.

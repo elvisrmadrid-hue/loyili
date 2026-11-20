@@ -40,7 +40,7 @@ export function MerchantNav({ merchantId, isOwner }: MerchantNavProps) {
             key={item.href}
             href={item.href}
             aria-current={active ? "page" : undefined}
-            className={`shrink-0 border-b-2 px-3 py-2 text-sm font-medium ${
+            className={`shrink-0 border-b-2 px-3 py-3 text-sm font-medium ${
               active
                 ? "border-foreground text-foreground"
                 : "border-transparent text-zinc-600 hover:text-foreground dark:text-zinc-400"

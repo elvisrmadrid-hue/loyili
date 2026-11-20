@@ -87,7 +87,7 @@ async function Rewards({ merchantId }: { merchantId: string }) {
               )}
               {isOwner && (
                 <details>
-                  <summary className="cursor-pointer text-sm underline underline-offset-4">Editar</summary>
+                  <summary className="cursor-pointer py-2 text-sm underline underline-offset-4">Editar</summary>
                   <div className="pt-3">
                     <RewardForm
                       action={updateReward.bind(null, merchantId, reward.id)}

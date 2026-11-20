@@ -62,6 +62,12 @@ Conceptos técnicos que aparecen durante el desarrollo de Loyili, explicados en 
 
 **Idempotencia** — Propiedad de una operación que, si se repite por error (doble clic, reintento de red), produce el mismo resultado que hacerla una sola vez.
 
+**PWA (aplicación web progresiva)** — Una web que se puede instalar en el teléfono como una app: ícono en la pantalla de inicio y sin la barra del navegador. No pasa por las tiendas de aplicaciones y se actualiza sola al publicar cambios.
+
+**Manifiesto** — Ficha de la app (`/manifest.webmanifest`) que le dice al teléfono su nombre, su ícono, sus colores y en qué página abrir. Es lo que hace instalable una web.
+
+**Service worker** — Un pequeño programa que el navegador mantiene en segundo plano para una web: guarda copias para usarla sin conexión y recibe notificaciones. Loyili aún no lo usa; llegará con las notificaciones.
+
 ## Seguridad
 
 **Variable de entorno** — Valor de configuración (como una contraseña o una URL) que se guarda fuera del código, en `.env.local`, para no publicarlo.

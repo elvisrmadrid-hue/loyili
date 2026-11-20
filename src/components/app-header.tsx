@@ -9,7 +9,7 @@ type AppHeaderProps = {
 /** Top bar of the private areas (wallet and merchant panel). */
 export function AppHeader({ userName, signOutAction }: AppHeaderProps) {
   return (
-    <header className="print:hidden flex items-center justify-between gap-4 border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
+    <header className="print:hidden flex items-center justify-between gap-4 border-b border-zinc-200 px-4 py-2 dark:border-zinc-800">
       <Link href="/" className="text-lg font-semibold tracking-tight">
         Loyili
       </Link>
@@ -18,7 +18,7 @@ export function AppHeader({ userName, signOutAction }: AppHeaderProps) {
         <form action={signOutAction}>
           <button
             type="submit"
-            className="shrink-0 rounded-full border border-zinc-300 px-4 py-1.5 text-sm font-medium dark:border-zinc-700"
+            className="inline-flex h-11 shrink-0 items-center rounded-full border border-zinc-300 px-4 text-sm font-medium dark:border-zinc-700"
           >
             Cerrar sesión
           </button>

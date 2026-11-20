@@ -6,6 +6,7 @@ import { getMyMemberships } from "@/modules/customers";
 import { describeRule, formatPoints } from "@/modules/loyalty";
 import { getMyMerchants } from "@/modules/merchants";
 import { AppHeader } from "@/components/app-header";
+import { InstallCard } from "@/components/install-card";
 import { FormAlert } from "@/components/ui/form-alert";
 import { Loading } from "@/components/ui/loading";
 import { LocalDate } from "@/components/ui/local-date";
@@ -47,6 +48,8 @@ async function WalletContent({ searchParams }: Pick<PageProps<"/wallet">, "searc
         </div>
 
         {joined && <FormAlert message={`¡Listo! Ya eres cliente de «${joined.merchantName}».`} />}
+
+        <InstallCard />
 
         {memberships.length === 0 ? (
           <div className={`${card} flex flex-col gap-2`}>
