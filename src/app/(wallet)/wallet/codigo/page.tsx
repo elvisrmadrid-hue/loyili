@@ -4,7 +4,6 @@ import { Suspense } from "react";
 import { getCurrentProfile, requireUser, signOut } from "@/modules/auth";
 import { issueMyCode } from "@/modules/identification";
 import { AppHeader } from "@/components/app-header";
-import { FormAlert } from "@/components/ui/form-alert";
 import { Loading } from "@/components/ui/loading";
 import { CustomerCode } from "./customer-code";
 
@@ -20,8 +19,7 @@ export default function MyCodePage() {
 
 async function MyCode() {
   const user = await requireUser("/wallet/codigo");
-  // A new code every time the screen opens; the client renews it before it expires.
-  const [profile, issued] = await Promise.all([getCurrentProfile(), issueMyCode()]);
+  const profile = await getCurrentProfile();
 
   return (
     <>
@@ -31,11 +29,11 @@ async function MyCode() {
           ← Mis programas
         </Link>
         <h1 className="text-2xl font-semibold">Mi código</h1>
-        {"error" in issued ? (
-          <FormAlert error={issued.error} />
-        ) : (
-          <CustomerCode initial={issued} renewAction={issueMyCode} />
-        )}
+        {/* The code itself is requested by the browser each time this screen appears. */}
+        <CustomerCode issueAction={issueMyCode} />
+        <noscript>
+          <p>Para ver tu código necesitas tener JavaScript activado en el navegador.</p>
+        </noscript>
       </main>
     </>
   );

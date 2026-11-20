@@ -13,7 +13,7 @@ Estados: ⬜ pendiente · 🟦 en curso · 🟨 en verificación · ✅ completa
 | 4 | **Clientes y membresías** | Un cliente queda asociado a un comercio; el comercio ve su lista de clientes | ✅ |
 | 5 | **Ledger de puntos: acumulación** | El personal registra una compra y se acreditan los puntos correctos; saldo e historial correctos (con pruebas automáticas) | ✅ |
 | 6 | **Recompensas y canje** | Catálogo de recompensas; canje que descuenta puntos y nunca deja saldo negativo | ✅ |
-| 7 | **Identificación por QR** | El cliente muestra su QR; el personal lo escanea para acreditar o canjear | 🟨 |
+| 7 | **Identificación por QR** | El cliente muestra su QR; el personal lo escanea para acreditar o canjear | ✅ |
 | 8 | **Billetera PWA** | La billetera se instala en el teléfono y se ve bien en móvil | ⬜ |
 | 9 | **Reportes del comercio** | Métricas básicas (clientes activos, puntos emitidos/canjeados) | ⬜ |
 | 10 | **Despliegue** | La aplicación publicada en internet (p. ej. Vercel + Supabase en producción) | ⬜ |
@@ -65,3 +65,4 @@ Estados: ⬜ pendiente · 🟦 en curso · 🟨 en verificación · ✅ completa
 ### Módulo 7 — Identificación por QR
 - 2026-11-17: especificación validada ([07-identificacion-qr.md](modules/07-identificacion-qr.md)). Código temporal de 5 minutos que se renueva solo, un código por persona, código corto de 8 caracteres, unión de clientes nuevos desde caja.
 - 2026-11-17: implementado. Migración `create_customer_codes` aplicada (tabla sin acceso directo, `issue_customer_code`, `resolve_customer_code`, `enroll_customer_by_code`). Pantalla "Mi código" en la billetera; en caja, escanear QR (jsQR), escribir el código y "Unirlo al programa". `npm test` 36/36, `verify:rls` 213/213. Decisión en [ADR 0007](architecture/adr/0007-codigo-temporal-del-cliente.md). Pendiente: prueba manual del usuario.
+- 2026-11-19: prueba manual del usuario correcta. Corregido un caso: al volver a "Mi código" se veía una copia guardada con el código anterior; ahora el navegador pide siempre un código nuevo. Módulo cerrado.

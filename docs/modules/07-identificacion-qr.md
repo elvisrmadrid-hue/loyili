@@ -1,6 +1,6 @@
 # Módulo 07 — Identificación por QR
 
-- **Estado**: implementado (2026-11-17), pendiente de prueba manual
+- **Estado**: verificado (2026-11-19)
 - **Fecha**: 2026-11-17
 
 ## Objetivo
@@ -85,16 +85,16 @@ Migración: `supabase/migrations/<timestamp>_create_customer_codes.sql`
 
 ## Criterios de aceptación
 
-- [ ] La migración se aplica y `customer_codes` no es accesible directamente desde la API (comprobado con script).
-- [ ] El cliente abre "Mi código" y ve un QR y un código corto que se renuevan solos antes de caducar.
-- [ ] En caja, escanear el QR con la cámara abre la ficha del cliente correcto.
-- [ ] Escribir el código corto (con o sin guion, en minúsculas o mayúsculas) también abre la ficha.
-- [ ] Un código caducado o inexistente muestra "Código no válido o caducado. Pide al cliente que lo actualice".
-- [ ] El código de alguien que no es cliente ofrece unirlo (si el programa está activo) y, tras unirlo, abre su ficha.
-- [ ] El código del dueño o del personal del comercio se rechaza.
-- [ ] Un comercio no puede saber nada de un código de una persona que no es su cliente, salvo su nombre al mostrarle el código en caja. Los clientes no pueden resolver códigos.
-- [ ] La búsqueda por nombre sigue funcionando.
-- [ ] `npm test`, `npm run lint`, `npm run typecheck`, `npm run build` y `npm run verify:rls` pasan.
+- [x] La migración se aplica y `customer_codes` no es accesible directamente desde la API (comprobado con script).
+- [x] El cliente abre "Mi código" y ve un QR y un código corto que se renuevan solos antes de caducar.
+- [x] En caja, escanear el QR con la cámara abre la ficha del cliente correcto.
+- [x] Escribir el código corto (con o sin guion, en minúsculas o mayúsculas) también abre la ficha.
+- [x] Un código caducado o inexistente muestra "Código no válido o caducado. Pide al cliente que lo actualice".
+- [x] El código de alguien que no es cliente ofrece unirlo (si el programa está activo) y, tras unirlo, abre su ficha.
+- [x] El código del dueño o del personal del comercio se rechaza.
+- [x] Un comercio no puede saber nada de un código de una persona que no es su cliente, salvo su nombre al mostrarle el código en caja. Los clientes no pueden resolver códigos.
+- [x] La búsqueda por nombre sigue funcionando.
+- [x] `npm test`, `npm run lint`, `npm run typecheck`, `npm run build` y `npm run verify:rls` pasan.
 
 ## Verificación
 
@@ -125,7 +125,9 @@ Migración: `supabase/migrations/<timestamp>_create_customer_codes.sql`
 
 Decisión técnica en el [ADR 0007](../architecture/adr/0007-codigo-temporal-del-cliente.md).
 
-Falta la prueba manual en el navegador.
+**Resultado manual (2026-11-19)**: el usuario probó "Mi código", escribir el código en caja, el código reemplazado, unir a un cliente nuevo, el código del dueño y la búsqueda por nombre. Todo correcto salvo un caso: al volver atrás y entrar otra vez en "Mi código", durante unos minutos seguía apareciendo el mismo código.
+
+**Causa y corrección**: el navegador guarda una copia de las páginas visitadas para que ir atrás y adelante sea instantáneo, y esa copia traía el código dentro. Además, la cuenta atrás volvía a empezar en 5:00 aunque el código ya llevaba minutos emitido, así que podía mostrar como vigente un código casi caducado. Ahora la página **nunca lleva el código**: el navegador lo pide cada vez que se abre la pantalla y cuenta los 5 minutos desde que recibe la respuesta. La prueba de humo comprueba que la página no contiene ningún código (19/19). Se repitieron `verify:rls` (213/213) y todas las pruebas de humo de los Módulos 2 a 7 contra el build de producción, sin fallos.
 
 ## Riesgos
 

@@ -10,51 +10,60 @@ import { card, mutedText, secondaryButton } from "@/components/ui/styles";
 const RETRY_MS = 10_000;
 
 type CustomerCodeProps = {
-  initial: IssuedCode;
-  renewAction: () => Promise<IssuedCode | { error: string }>;
+  issueAction: () => Promise<IssuedCode | { error: string }>;
 };
 
 /**
- * The customer's QR and short code with a countdown. Asks the server for a new code shortly
- * before the current one expires, also when the phone wakes up (timers sleep in the background).
+ * The customer's QR and short code with a countdown.
+ *
+ * The code is always requested by the browser when this screen appears (never embedded in
+ * the page): the router keeps copies of visited pages for back/forward navigation, and a
+ * copy would show an old code with a countdown that starts again at 5:00. It is renewed
+ * shortly before it expires, also when the phone wakes up (timers sleep in the background).
  */
-export function CustomerCode({ initial, renewAction }: CustomerCodeProps) {
-  const [code, setCode] = useState(initial);
-  const [remaining, setRemaining] = useState(initial.validSeconds);
+export function CustomerCode({ issueAction }: CustomerCodeProps) {
+  const [code, setCode] = useState<IssuedCode | null>(null);
+  const [remaining, setRemaining] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  // Moment (local clock) when the current code expires. Set on mount and on each renewal.
+  // Moment (local clock) when the current code expires; 0 = no code yet.
   const deadline = useRef(0);
   const renewing = useRef(false);
   const lastAttempt = useRef(0);
 
-  const renew = useCallback(async () => {
+  // State changes only when the server answers (in the promise callbacks).
+  const renew = useCallback(() => {
     if (renewing.current) return;
     renewing.current = true;
     lastAttempt.current = Date.now();
-    try {
-      const result = await renewAction();
-      if ("error" in result) {
-        setError(result.error);
-      } else {
-        deadline.current = Date.now() + result.validSeconds * 1000;
-        setCode(result);
-        setRemaining(result.validSeconds);
-        setError(null);
-      }
-    } catch {
-      setError("No se pudo renovar tu código. Revisa tu conexión.");
-    } finally {
-      renewing.current = false;
-    }
-  }, [renewAction]);
+    issueAction()
+      .then(
+        (result) => {
+          if ("error" in result) {
+            setError(result.error);
+            return;
+          }
+          // Counted from when the answer arrives, with this device's own clock.
+          deadline.current = Date.now() + result.validSeconds * 1000;
+          setCode(result);
+          setRemaining(result.validSeconds);
+          setError(null);
+        },
+        () => setError("No se pudo obtener tu código. Revisa tu conexión."),
+      )
+      .finally(() => {
+        renewing.current = false;
+      });
+  }, [issueAction]);
 
   useEffect(() => {
-    deadline.current = Date.now() + initial.validSeconds * 1000;
+    // A fresh code every time the screen appears.
+    renew();
 
     const tick = () => {
+      if (deadline.current === 0) return;
       const left = Math.max(0, Math.ceil((deadline.current - Date.now()) / 1000));
       setRemaining(left);
-      if (left <= RENEW_BEFORE_SECONDS && Date.now() - lastAttempt.current >= RETRY_MS) void renew();
+      if (left <= RENEW_BEFORE_SECONDS && Date.now() - lastAttempt.current >= RETRY_MS) renew();
     };
     const onVisible = () => {
       if (document.visibilityState === "visible") tick();
@@ -66,7 +75,29 @@ export function CustomerCode({ initial, renewAction }: CustomerCodeProps) {
       clearInterval(timer);
       document.removeEventListener("visibilitychange", onVisible);
     };
-  }, [initial.validSeconds, renew]);
+  }, [renew]);
+
+  if (!code) {
+    return (
+      <section className={`${card} flex flex-col items-center gap-4 text-center`}>
+        {error ? (
+          <>
+            <FormAlert error={error} />
+            <button type="button" onClick={() => renew()} className={secondaryButton}>
+              Intentar de nuevo
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="size-64 animate-pulse rounded-lg bg-zinc-100 dark:bg-zinc-800" aria-hidden />
+            <p className={mutedText} role="status">
+              Generando tu código…
+            </p>
+          </>
+        )}
+      </section>
+    );
+  }
 
   const expired = remaining === 0;
 
@@ -90,13 +121,11 @@ export function CustomerCode({ initial, renewAction }: CustomerCodeProps) {
         {code.display}
       </p>
       {expired ? (
-        <button type="button" onClick={() => void renew()} className={secondaryButton}>
+        <button type="button" onClick={() => renew()} className={secondaryButton}>
           Generar otro código
         </button>
       ) : (
-        <p className={mutedText} aria-live="off">
-          Válido por {formatCountdown(remaining)} · se renueva solo
-        </p>
+        <p className={mutedText}>Válido por {formatCountdown(remaining)} · se renueva solo</p>
       )}
       {error && <FormAlert error={error} />}
       <p className={mutedText}>
