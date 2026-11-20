@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { currencyLabel, getBranches } from "@/modules/merchants";
 import { getCustomerCount } from "@/modules/customers";
 import { describeRule, getLoyaltyProgram } from "@/modules/loyalty";
+import { InstallCard } from "@/components/install-card";
 import { Loading } from "@/components/ui/loading";
 import { card, mutedText, primaryButton } from "@/components/ui/styles";
 import { loadMembership } from "./load-membership";
@@ -34,6 +35,8 @@ async function MerchantHome({ merchantId }: { merchantId: string }) {
   return (
     <>
       <h1 className="text-2xl font-semibold">Inicio</h1>
+
+      <InstallCard description="Ten la caja a un toque en el teléfono o la computadora del mostrador, como cualquier app." />
 
       <dl className={`${card} grid grid-cols-2 gap-3 sm:grid-cols-4`}>
         <div>

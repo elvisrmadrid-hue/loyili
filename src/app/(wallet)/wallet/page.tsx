@@ -49,7 +49,7 @@ async function WalletContent({ searchParams }: Pick<PageProps<"/wallet">, "searc
 
         {joined && <FormAlert message={`¡Listo! Ya eres cliente de «${joined.merchantName}».`} />}
 
-        <InstallCard />
+        <InstallCard description="Abre tu billetera con un toque, como cualquier app, sin buscarla en el navegador." />
 
         {memberships.length === 0 ? (
           <div className={`${card} flex flex-col gap-2`}>

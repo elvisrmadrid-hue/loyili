@@ -30,7 +30,9 @@ export function MerchantNav({ merchantId, isOwner }: MerchantNavProps) {
   ];
 
   return (
-    <nav className="-mb-px flex gap-1 overflow-x-auto">
+    // Phones: one row that slides sideways with the finger (no visible scrollbar).
+    // Wider screens: tabs wrap onto a second row, so none is hidden.
+    <nav className="-mb-px flex gap-1 overflow-x-auto [scrollbar-width:none] sm:flex-wrap sm:overflow-visible [&::-webkit-scrollbar]:hidden">
       {items.map((item) => {
         // A tab stays active on its sub-pages (e.g. a customer's detail under "Clientes").
         const active =

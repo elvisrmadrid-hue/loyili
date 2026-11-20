@@ -50,11 +50,17 @@ function subscribe(onChange: () => void) {
   return () => listeners.delete(onChange);
 }
 
+type InstallCardProps = {
+  /** Why installing helps, in the words of the screen it appears on. */
+  description: string;
+};
+
 /**
- * "Install Loyili on your phone": an Install button where the browser allows it (Chrome,
- * Edge, Android), the steps on iPhone. Hidden inside the installed app and once dismissed.
+ * "Install Loyili as an app": an Install button when the browser offers it (Chrome, Edge,
+ * Android); otherwise the steps for this device (iPhone's Share menu, the browser menu on a
+ * computer). Hidden inside the installed app, in browsers that cannot install, and once dismissed.
  */
-export function InstallCard() {
+export function InstallCard({ description }: InstallCardProps) {
   const device = useSyncExternalStore(subscribe, readDevice, () => HIDDEN);
   const [prompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
@@ -73,13 +79,13 @@ export function InstallCard() {
   }, []);
 
   if (device.hidden) return null;
-  // Desktop browsers without an install option (Firefox, Safari on Mac): nothing useful to say.
+  // Browsers that cannot install apps (Firefox, Safari on a Mac…): nothing useful to say.
   if (!prompt && device.platform === "other") return null;
 
   return (
     <section className={`${card} flex flex-col gap-3`}>
       <div className="flex items-start justify-between gap-3">
-        <h2 className="font-semibold">Instala Loyili en tu teléfono</h2>
+        <h2 className="font-semibold">Instala Loyili como una app</h2>
         <button
           type="button"
           onClick={hideForGood}
@@ -89,7 +95,7 @@ export function InstallCard() {
           Ahora no
         </button>
       </div>
-      <p className={mutedText}>Abre tu billetera con un toque, como cualquier app, sin buscarla en el navegador.</p>
+      <p className={mutedText}>{description}</p>
       {prompt ? (
         <button
           type="button"
@@ -103,22 +109,56 @@ export function InstallCard() {
         >
           Instalar
         </button>
-      ) : device.platform === "ios" ? (
-        <ol className="list-decimal space-y-1 pl-5 text-sm">
-          <li>Abre esta página en <strong>Safari</strong>.</li>
-          <li>
-            Toca <strong>Compartir</strong> (el cuadrado con una flecha hacia arriba).
-          </li>
-          <li>
-            Elige <strong>Añadir a pantalla de inicio</strong> y confirma.
-          </li>
-        </ol>
       ) : (
-        <p className="text-sm">
-          Abre el menú del navegador (<strong>⋮</strong>) y elige <strong>Instalar aplicación</strong> o{" "}
-          <strong>Añadir a pantalla de inicio</strong>.
-        </p>
+        <ManualSteps platform={device.platform} />
       )}
     </section>
+  );
+}
+
+/** How to install from the browser itself when it does not offer the Install button. */
+function ManualSteps({ platform }: { platform: InstallPlatform }) {
+  if (platform === "ios") {
+    return (
+      <ol className="list-decimal space-y-1 pl-5 text-sm">
+        <li>
+          Abre esta página en <strong>Safari</strong>.
+        </li>
+        <li>
+          Toca <strong>Compartir</strong> (el cuadrado con una flecha hacia arriba).
+        </li>
+        <li>
+          Elige <strong>Añadir a pantalla de inicio</strong> y confirma.
+        </li>
+      </ol>
+    );
+  }
+
+  const steps =
+    platform === "edge" ? (
+      <>
+        Abre el menú <strong>⋯</strong> (arriba a la derecha) → <strong>Aplicaciones</strong> →{" "}
+        <strong>Instalar este sitio como una aplicación</strong>.
+      </>
+    ) : platform === "chrome" ? (
+      <>
+        Abre el menú <strong>⋮</strong> (arriba a la derecha) → <strong>Transmitir, guardar y compartir</strong> →{" "}
+        <strong>Instalar página como aplicación</strong> (o <strong>Instalar Loyili</strong>).
+      </>
+    ) : (
+      <>
+        Abre el menú del navegador (<strong>⋮</strong>) y elige <strong>Instalar aplicación</strong> o{" "}
+        <strong>Añadir a pantalla de inicio</strong>.
+      </>
+    );
+
+  return (
+    <div className="flex flex-col gap-1 text-sm">
+      <p>{steps}</p>
+      <p className={mutedText}>
+        ¿No aparece la opción? Desde una ventana de incógnito no se puede instalar. Si ya la instalaste, ábrela
+        desde su ícono.
+      </p>
+    </div>
   );
 }

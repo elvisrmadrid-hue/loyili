@@ -105,6 +105,17 @@ Lógica pura en `src/lib/device.ts`: `installPlatform(userAgent)` devuelve `ios`
 - Repaso móvil: las pantallas ya usaban columnas en móvil, textos recortados y campos de 16 px. Se agrandaron a 44 px de alto los botones pequeños de tocar: "Cerrar sesión", "Quitar"/"Revocar"/"Eliminar", "Editar", "Anular" y las pestañas del panel.
 - Se eliminó `src/app/favicon.ico`, el logo de Next.js que venía con la plantilla; ahora la pestaña usa el ícono de Loyili.
 
+**Primera prueba del usuario (2026-11-19)**: no encontraba dónde instalar. Diagnóstico con Chrome 158 y Edge 157 en modo invisible, usando su protocolo de depuración (`Page.getInstallabilityErrors`): **la app es instalable, sin errores**, y el navegador avisa a la página (`beforeinstallprompt`). La billetera muestra la tarjeta con el botón "Instalar" (verificado con capturas de pantalla, en la computadora y a 360 px). Causas de que no se viera:
+- desde una ventana de **incógnito** no se puede instalar, y la tarjeta se ocultaba sin explicar nada;
+- la tarjeta solo estaba en la billetera, y el dueño entra al panel.
+
+Correcciones:
+- en Chrome y Edge, si el navegador no ofrece el botón, la tarjeta explica el camino del menú de cada uno y avisa de lo del incógnito;
+- la tarjeta también aparece en el inicio del panel;
+- las pestañas del panel pasan a una segunda línea en pantallas anchas, en vez de mostrar una barra de desplazamiento que escondía "Mis comercios".
+
+`npm test` 42/42, pruebas de humo de los Módulos 2 a 7 sin fallos contra producción.
+
 Falta la prueba manual en el navegador.
 
 ## Riesgos
