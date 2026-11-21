@@ -14,7 +14,7 @@ Estados: ⬜ pendiente · 🟦 en curso · 🟨 en verificación · ✅ completa
 | 5 | **Ledger de puntos: acumulación** | El personal registra una compra y se acreditan los puntos correctos; saldo e historial correctos (con pruebas automáticas) | ✅ |
 | 6 | **Recompensas y canje** | Catálogo de recompensas; canje que descuenta puntos y nunca deja saldo negativo | ✅ |
 | 7 | **Identificación por QR** | El cliente muestra su QR; el personal lo escanea para acreditar o canjear | ✅ |
-| 8 | **Billetera PWA** | La billetera se instala en el teléfono y se ve bien en móvil | 🟨 |
+| 8 | **Billetera PWA** | La billetera se instala en el teléfono y se ve bien en móvil | ✅ |
 | 9 | **Reportes del comercio** | Métricas básicas (clientes activos, puntos emitidos/canjeados) | ⬜ |
 | 10 | **Despliegue** | La aplicación publicada en internet (p. ej. Vercel + Supabase en producción) | ⬜ |
 | 11+ | Notificaciones, administración de la plataforma, niveles, etc. | — | ⬜ |
@@ -70,3 +70,5 @@ Estados: ⬜ pendiente · 🟦 en curso · 🟨 en verificación · ✅ completa
 ### Módulo 8 — Billetera PWA
 - 2026-11-19: especificación validada ([08-billetera-pwa.md](modules/08-billetera-pwa.md)). Una sola app que abre en `/inicio`, ícono provisional (sin logo todavía), sin modo sin conexión ni service worker, tarjeta para instalar, pantalla encendida en "Mi código".
 - 2026-11-19: implementado. Manifiesto, íconos generados por código, color de barra y márgenes seguros, tarjeta "Instala Loyili", aviso "Sin conexión", Wake Lock en "Mi código" y botones de 44 px. `npm test` 41/41. Pendiente: prueba manual del usuario.
+- 2026-11-19: primera prueba del usuario: no encontraba cómo instalar (ventana de incógnito y tarjeta solo en la billetera). Se añadieron instrucciones de menú y la tarjeta en el panel.
+- 2026-11-20: el usuario instaló la app en Windows. El parpadeo al cambiar de pestaña era del servidor de desarrollo (bucle de recargas tras muchos cambios en caliente); en producción no ocurre y desapareció al reiniciarlo. Módulo cerrado.

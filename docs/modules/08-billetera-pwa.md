@@ -1,6 +1,6 @@
 # Módulo 08 — Billetera PWA
 
-- **Estado**: implementado (2026-11-19), pendiente de prueba manual
+- **Estado**: verificado (2026-11-20)
 - **Fecha**: 2026-11-19
 
 ## Objetivo
@@ -73,13 +73,13 @@ Lógica pura en `src/lib/device.ts`: `installPlatform(userAgent)` devuelve `ios`
 
 ## Criterios de aceptación
 
-- [ ] En Chrome o Edge de la computadora, en `localhost`, aparece la opción de instalar Loyili. Al instalarla abre en su propia ventana y en `/inicio`.
-- [ ] El ícono provisional se ve en la ventana instalada, en la pestaña del navegador y en el manifiesto (192, 512 y maskable).
-- [ ] La tarjeta "Instala Loyili" muestra el botón en Chrome o Edge y los pasos en iPhone, no aparece dentro de la app instalada y, si se cierra, no vuelve a salir en ese dispositivo.
-- [ ] Al cortar la conexión aparece "Sin conexión" y desaparece al volver.
-- [ ] "Mi código" mantiene la pantalla encendida donde el navegador lo permite, sin errores donde no.
-- [ ] A 360 px de ancho, la billetera, "Mi código", la caja (con escaneo), los clientes, las recompensas y los formularios se ven sin desbordes horizontales y con botones cómodos de tocar.
-- [ ] `npm test`, `npm run lint`, `npm run typecheck`, `npm run build` y `npm run verify:rls` pasan.
+- [x] En Chrome o Edge de la computadora, en `localhost`, aparece la opción de instalar Loyili. Al instalarla abre en su propia ventana y en `/inicio`.
+- [x] El ícono provisional se ve en la ventana instalada, en la pestaña del navegador y en el manifiesto (192, 512 y maskable).
+- [x] La tarjeta "Instala Loyili" muestra el botón en Chrome o Edge y los pasos en iPhone, no aparece dentro de la app instalada y, si se cierra, no vuelve a salir en ese dispositivo.
+- [x] Al cortar la conexión aparece "Sin conexión" y desaparece al volver.
+- [x] "Mi código" mantiene la pantalla encendida donde el navegador lo permite, sin errores donde no.
+- [x] A 360 px de ancho, la billetera, "Mi código", la caja (con escaneo), los clientes, las recompensas y los formularios se ven sin desbordes horizontales y con botones cómodos de tocar.
+- [x] `npm test`, `npm run lint`, `npm run typecheck`, `npm run build` y `npm run verify:rls` pasan.
 
 ## Verificación
 
@@ -116,7 +116,13 @@ Correcciones:
 
 `npm test` 42/42, pruebas de humo de los Módulos 2 a 7 sin fallos contra producción.
 
-Falta la prueba manual en el navegador.
+**Resultado manual (2026-11-20)**: el usuario instaló Loyili desde Chrome en Windows: se abre como un programa, con el ícono de la "L". Al tocar "Caja" o "Clientes", la app parpadeaba.
+
+**Diagnóstico del parpadeo**: reproducido en Chrome invisible (modo app simulado), contando las cargas de página. El servidor de desarrollo, que llevaba encendido desde el día anterior con muchos cambios en caliente (incluida la configuración), **recargaba la página entera en bucle**, con el error de Next.js "The server could not finish this Suspense boundary", también en una pestaña normal. Resultados:
+- **Build de producción: sin fallo.** Cada pestaña se abre a la primera, con una sola petición y sin errores, también en modo app.
+- **Servidor de desarrollo reiniciado**: el bucle solo aparece la primera vez que se compila cada página. Después, todas las pestañas cargan una vez y quedan estables.
+
+Conclusión: es un comportamiento del modo desarrollo de Next.js, no un fallo de Loyili ni de la app instalada. Si vuelve a ocurrir en desarrollo, basta con reiniciar `npm run dev`. Desde ahora, la verificación incluye un recorrido en un navegador real: cargas por página, clics en pestañas y errores de consola.
 
 ## Riesgos
 
