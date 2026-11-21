@@ -13,6 +13,7 @@ Documentación de referencia (leer antes de trabajar en un módulo):
 - [docs/architecture/domain-model.md](docs/architecture/domain-model.md) — entidades y reglas de negocio
 - [docs/architecture/adr/](docs/architecture/adr/) — decisiones tomadas y su porqué
 - [docs/modules/](docs/modules/) — especificación de cada módulo
+- [docs/despliegue.md](docs/despliegue.md) — cómo se publica y cómo se aplican migraciones a producción
 
 ## 2. Sobre el usuario y la forma de comunicarse
 
@@ -114,4 +115,5 @@ npm run lint       # ESLint
 npm run typecheck  # verificación de tipos TypeScript
 npm test           # pruebas unitarias (Vitest)
 npm run verify:rls # comprobación de RLS contra el proyecto de desarrollo
+npm run verify:prod # comprobación de solo lectura de producción (ver docs/despliegue.md)
 ```
