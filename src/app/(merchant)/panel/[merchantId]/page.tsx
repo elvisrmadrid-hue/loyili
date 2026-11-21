@@ -78,7 +78,11 @@ async function MerchantHome({ merchantId }: { merchantId: string }) {
       </Link>
 
       {isOwner ? (
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Link href={`${base}/reportes`} className={`${card} hover:border-foreground`}>
+            <p className="font-medium">Reportes</p>
+            <p className={mutedText}>Clientes activos, compras y puntos de tu programa.</p>
+          </Link>
           <Link href={`${base}/clientes`} className={`${card} hover:border-foreground`}>
             <p className="font-medium">Clientes</p>
             <p className={mutedText}>Invítalos con tu enlace o un cartel con QR.</p>

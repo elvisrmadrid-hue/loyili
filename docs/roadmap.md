@@ -15,7 +15,7 @@ Estados: ⬜ pendiente · 🟦 en curso · 🟨 en verificación · ✅ completa
 | 6 | **Recompensas y canje** | Catálogo de recompensas; canje que descuenta puntos y nunca deja saldo negativo | ✅ |
 | 7 | **Identificación por QR** | El cliente muestra su QR; el personal lo escanea para acreditar o canjear | ✅ |
 | 8 | **Billetera PWA** | La billetera se instala en el teléfono y se ve bien en móvil | ✅ |
-| 9 | **Reportes del comercio** | Métricas básicas (clientes activos, puntos emitidos/canjeados) | ⬜ |
+| 9 | **Reportes del comercio** | Métricas básicas (clientes activos, puntos emitidos/canjeados) | 🟨 |
 | 10 | **Despliegue** | La aplicación publicada en internet (p. ej. Vercel + Supabase en producción) | ⬜ |
 | 11+ | Notificaciones, administración de la plataforma, niveles, etc. | — | ⬜ |
 
@@ -72,3 +72,7 @@ Estados: ⬜ pendiente · 🟦 en curso · 🟨 en verificación · ✅ completa
 - 2026-11-19: implementado. Manifiesto, íconos generados por código, color de barra y márgenes seguros, tarjeta "Instala Loyili", aviso "Sin conexión", Wake Lock en "Mi código" y botones de 44 px. `npm test` 41/41. Pendiente: prueba manual del usuario.
 - 2026-11-19: primera prueba del usuario: no encontraba cómo instalar (ventana de incógnito y tarjeta solo en la billetera). Se añadieron instrucciones de menú y la tarjeta en el panel.
 - 2026-11-20: el usuario instaló la app en Windows. El parpadeo al cambiar de pestaña era del servidor de desarrollo (bucle de recargas tras muchos cambios en caliente); en producción no ocurre y desapareció al reiniciarlo. Módulo cerrado.
+
+### Módulo 9 — Reportes del comercio
+- 2026-11-20: especificación validada ([09-reportes.md](modules/09-reportes.md)). Solo el dueño; periodos de 7, 30 y 90 días y desde el inicio; cliente activo = compró o canjeó en el periodo; lo anulado no cuenta.
+- 2026-11-20: implementado. Función `get_merchant_report` (todo se calcula en la base de datos, solo el dueño). Pestaña "Reportes" con tarjetas, recompensas más canjeadas, compras por sucursal y mejores clientes. `npm test` 50/50, `verify:rls` 231/231. Pendiente: prueba manual del usuario.

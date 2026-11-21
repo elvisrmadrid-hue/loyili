@@ -68,6 +68,10 @@ Conceptos técnicos que aparecen durante el desarrollo de Loyili, explicados en 
 
 **Service worker** — Un pequeño programa que el navegador mantiene en segundo plano para una web: guarda copias para usarla sin conexión y recibe notificaciones. Loyili aún no lo usa; llegará con las notificaciones.
 
+**Puntos en circulación** — Suma de los saldos de todos los clientes de un comercio: los puntos que el comercio "debe" y que pueden canjearse en cualquier momento. Sirve para prever cuántas recompensas habrá que entregar.
+
+**Agregar (en un reporte)** — Resumir muchos registros en pocas cifras: contar, sumar o promediar. Loyili lo hace dentro de la base de datos, que es mucho más rápido que traer todos los movimientos a la aplicación.
+
 ## Seguridad
 
 **Variable de entorno** — Valor de configuración (como una contraseña o una URL) que se guarda fuera del código, en `.env.local`, para no publicarlo.

@@ -1,6 +1,6 @@
 # Módulo 09 — Reportes del comercio
 
-- **Estado**: validado (2026-11-20)
+- **Estado**: implementado (2026-11-20), pendiente de prueba manual
 - **Fecha**: 2026-11-20
 
 ## Objetivo
@@ -61,7 +61,7 @@ Migración: `supabase/migrations/<timestamp>_create_merchant_report.sql`. Sin ta
   - **mejores clientes**: los 5 primeros.
 - Un movimiento `EARN` o `REDEEM` cuenta solo si **no tiene una anulación**.
 
-Índice nuevo `point_transactions (merchant_id, created_at)` si hace falta para filtrar por fechas. Ya existe uno por `merchant_id`; se decidirá al implementar.
+No hizo falta un índice nuevo: el existente `point_transactions (merchant_id, created_at desc)` ya sirve para filtrar por fechas.
 
 ## Lógica de servidor
 
@@ -96,6 +96,22 @@ Migración: `supabase/migrations/<timestamp>_create_merchant_report.sql`. Sin ta
 - **Pruebas de humo**: la página del dueño muestra las cifras y el personal no puede abrirla.
 - **Navegador real**: recorrido en Chrome invisible (cargas, errores de consola, vista de teléfono) y captura de pantalla.
 - **Manual**: el dueño registra algunas compras y canjes y comprueba que el reporte los refleja.
+
+## Resultado automático (2026-11-20)
+
+- lint, typecheck y build sin errores; `npm test` 50/50 (8 nuevas: periodos, porcentajes, compra media y barras).
+- Migración `create_merchant_report` aplicada.
+- `verify:rls` 231/231 (18 nuevas):
+  - quién puede pedir el reporte (ni el personal, ni clientes, ni otros comercios, ni visitantes) y periodos válidos;
+  - en dos comercios de prueba, **cada cifra se recalcula desde los movimientos** y coincide con el reporte;
+  - la compra y el canje anulados quedan fuera;
+  - los rankings tienen como máximo 5 filas y van ordenados;
+  - las compras por sucursal suman el total;
+  - un comercio vacío recibe ceros sin errores.
+- Prueba de humo contra producción, con datos conocidos (3 compras, 1 anulada, 1 canje): 16/16. Cifras exactas, selector de periodo, el personal y los clientes no pueden abrirlo, mensaje sin datos. Sin regresiones en los Módulos 2 a 8.
+- Navegador real (Chrome invisible) con datos, en la computadora y a 360 px: una sola carga, sin errores de consola y sin desbordes. En el teléfono, "201 puntos" se cortaba; las tarjetas ahora muestran solo el número (el título ya dice "Puntos") y los números largos saltan de línea.
+
+Falta la prueba manual en el navegador.
 
 ## Preguntas abiertas
 

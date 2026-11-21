@@ -960,6 +960,80 @@ const cCode = await issue(c.client);
   check(wallet.data?.length === 1 && wallet.data[0].merchant_id === m1Id, "the new customer sees the merchant in their wallet", rowsOf(wallet));
 }
 
+// ===========================================================================
+// Module 9 — merchant report
+// ===========================================================================
+console.log("\n-- Module 9: merchant report --");
+const report = (client, merchantId, days = null) =>
+  client.rpc("get_merchant_report", { p_merchant_id: merchantId, p_days: days });
+
+// 30. Who can get the report
+{
+  for (const [who, client] of [["staff", c.client], ["a customer", d.client], ["another merchant's owner", b.client]]) {
+    const r = await report(client, m1Id);
+    check(r.error?.message === "not_allowed", `${who} cannot get the report`, r.error?.message ?? "allowed!");
+  }
+  const anon = await report(newClient(), m1Id);
+  check(Boolean(anon.error), "anon cannot get the report", anon.error?.code ?? "allowed!");
+  const bad = await report(a.client, m1Id, 15);
+  check(bad.error?.message === "invalid_period", "only 7, 30, 90 days or everything are valid periods", bad.error?.message ?? "allowed!");
+}
+
+// 31. The figures match the ledger (recomputed here from the raw movements)
+for (const [owner, merchantId, label] of [[a.client, m1Id, "Café de A"], [b.client, m2Id, "Tienda de B"]]) {
+  const { data: moves } = await owner.from("point_transactions").select("id, type, points, purchase_amount_minor, membership_id, reference_id, reward_id, branch_id").eq("merchant_id", merchantId);
+  const reversed = new Set(moves.filter((t) => t.type === "REVERSAL").map((t) => t.reference_id));
+  const counted = moves.filter((t) => (t.type === "EARN" || t.type === "REDEEM") && !reversed.has(t.id));
+  const earn = counted.filter((t) => t.type === "EARN");
+  const redeem = counted.filter((t) => t.type === "REDEEM");
+  const { data: members } = await owner.from("memberships").select("id, points_balance").eq("merchant_id", merchantId);
+
+  const expected = {
+    customers: { total: members.length, active: new Set(counted.map((t) => t.membership_id)).size },
+    purchases: { count: earn.length, amount_minor: earn.reduce((n, t) => n + t.purchase_amount_minor, 0) },
+    points: {
+      earned: earn.reduce((n, t) => n + t.points, 0),
+      redeemed: -redeem.reduce((n, t) => n + t.points, 0),
+      in_circulation: members.reduce((n, m) => n + m.points_balance, 0),
+    },
+    redemptions: redeem.length,
+  };
+  const all = (await report(owner, merchantId)).data;
+  const month = (await report(owner, merchantId, 30)).data;
+  const got = {
+    customers: { total: all?.customers.total, active: all?.customers.active },
+    purchases: all?.purchases,
+    points: all?.points,
+    redemptions: all?.redemptions.count,
+  };
+  check(JSON.stringify(got) === JSON.stringify(expected), `${label}: every figure matches the ledger`, `got ${JSON.stringify(got)} expected ${JSON.stringify(expected)}`);
+  check(JSON.stringify(month?.purchases) === JSON.stringify(all?.purchases), `${label}: the last 30 days include today's movements`, JSON.stringify(month?.purchases));
+  check(all?.customers.new === members.length, `${label}: every customer joined in the period (new = total)`, `${all?.customers.new}`);
+
+  const reversedEarns = moves.filter((t) => t.type === "EARN" && reversed.has(t.id)).length;
+  const reversedRedeems = moves.filter((t) => t.type === "REDEEM" && reversed.has(t.id)).length;
+  if (reversedEarns + reversedRedeems > 0)
+    check(all?.purchases.count + all?.redemptions.count === moves.filter((t) => t.type !== "REVERSAL").length - reversedEarns - reversedRedeems,
+      `${label}: reversed purchases and redemptions are left out`, `${reversedEarns} reversed purchases, ${reversedRedeems} reversed redemptions`);
+
+  const topCount = all?.redemptions.top_rewards.reduce((n, r) => n + r.count, 0);
+  check(topCount === Math.min(redeem.length, topCount) && (all?.redemptions.top_rewards.length ?? 0) <= 5, `${label}: top rewards add up and are at most 5`, JSON.stringify(all?.redemptions.top_rewards));
+  const topCustomers = all?.top_customers ?? [];
+  check(topCustomers.length <= 5 && topCustomers.every((x, i) => i === 0 || topCustomers[i - 1].amount_minor >= x.amount_minor), `${label}: best customers are sorted by amount (at most 5)`, JSON.stringify(topCustomers.map((x) => x.amount_minor)));
+  if (all?.branches.length) {
+    const byBranch = all.branches.reduce((n, x) => n + x.count, 0);
+    check(byBranch === all.purchases.count, `${label}: purchases by branch add up to the total`, `${byBranch} vs ${all.purchases.count}`);
+  }
+}
+
+// 32. A merchant without movements gets zeros, not errors
+{
+  const empty = await a.client.rpc("create_merchant", { p_name: "Vacío de A", p_currency: "USD" });
+  const r = await report(a.client, empty.data, 7);
+  check(!r.error && r.data.purchases.count === 0 && r.data.points.in_circulation === 0 && r.data.top_customers.length === 0 && r.data.branches.length === 0,
+    "a merchant without movements gets an empty report", r.error?.message ?? JSON.stringify(r.data?.purchases));
+}
+
 // 12. Owner managing the team
 {
   const team = await a.client.from("profiles").select("full_name").eq("id", c.id);
