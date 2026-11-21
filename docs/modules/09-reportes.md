@@ -1,6 +1,6 @@
 # Módulo 09 — Reportes del comercio
 
-- **Estado**: implementado (2026-11-20), pendiente de prueba manual
+- **Estado**: verificado (2026-11-21)
 - **Fecha**: 2026-11-20
 
 ## Objetivo
@@ -80,14 +80,14 @@ No hizo falta un índice nuevo: el existente `point_transactions (merchant_id, c
 
 ## Criterios de aceptación
 
-- [ ] Solo el dueño ve la pestaña y la página; el personal, los clientes y otros comercios no pueden obtener el reporte (comprobado con script).
-- [ ] Las cifras cuadran con los movimientos: compras, monto, puntos emitidos y canjeados, y canjes.
-- [ ] Una compra o un canje anulados no cuentan en ningún total.
-- [ ] Los puntos en circulación son iguales a la suma de los saldos de los clientes.
-- [ ] Cambiar el periodo cambia las cifras; "Desde el inicio" incluye todo.
-- [ ] Un comercio sin movimientos ve mensajes claros, no ceros sin explicación.
-- [ ] Se ve bien en el teléfono (360 px).
-- [ ] `npm test`, `npm run lint`, `npm run typecheck`, `npm run build` y `npm run verify:rls` pasan.
+- [x] Solo el dueño ve la pestaña y la página; el personal, los clientes y otros comercios no pueden obtener el reporte (comprobado con script).
+- [x] Las cifras cuadran con los movimientos: compras, monto, puntos emitidos y canjeados, y canjes.
+- [x] Una compra o un canje anulados no cuentan en ningún total.
+- [x] Los puntos en circulación son iguales a la suma de los saldos de los clientes.
+- [x] Cambiar el periodo cambia las cifras; "Desde el inicio" incluye todo.
+- [x] Un comercio sin movimientos ve mensajes claros, no ceros sin explicación.
+- [x] Se ve bien en el teléfono (360 px).
+- [x] `npm test`, `npm run lint`, `npm run typecheck`, `npm run build` y `npm run verify:rls` pasan.
 
 ## Verificación
 
@@ -111,7 +111,7 @@ No hizo falta un índice nuevo: el existente `point_transactions (merchant_id, c
 - Prueba de humo contra producción, con datos conocidos (3 compras, 1 anulada, 1 canje): 16/16. Cifras exactas, selector de periodo, el personal y los clientes no pueden abrirlo, mensaje sin datos. Sin regresiones en los Módulos 2 a 8.
 - Navegador real (Chrome invisible) con datos, en la computadora y a 360 px: una sola carga, sin errores de consola y sin desbordes. En el teléfono, "201 puntos" se cortaba; las tarjetas ahora muestran solo el número (el título ya dice "Puntos") y los números largos saltan de línea.
 
-Falta la prueba manual en el navegador.
+**Resultado manual (2026-11-21)**: el usuario recorrió los reportes desde la app instalada en Windows (compras, canje, anulación, periodos, mejores clientes, personal sin acceso). Todo correcto.
 
 ## Preguntas abiertas
 
