@@ -15,3 +15,4 @@ Nombre de archivo: `NN-nombre.md` (por ejemplo `01-supabase-auth.md`), con el mi
 | 6 | Recompensas y canje | [06-recompensas-canje.md](06-recompensas-canje.md) |
 | 7 | Identificación por QR | [07-identificacion-qr.md](07-identificacion-qr.md) |
 | 8 | Billetera PWA | [08-billetera-pwa.md](08-billetera-pwa.md) |
+| 9 | Reportes del comercio | [09-reportes.md](09-reportes.md) |
