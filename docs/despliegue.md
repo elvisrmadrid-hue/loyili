@@ -8,7 +8,7 @@ Cómo está publicada Loyili, cómo se publica un cambio y qué hacer si algo fa
 |---|---|---|
 | Código | GitHub, repositorio **privado** `loyili` | Copia de seguridad y origen de las publicaciones. |
 | App (Next.js) | Vercel, proyecto `loyili` | Sirve la web con HTTPS. Cada `git push` a `main` publica. |
-| Base de datos de producción | Supabase, proyecto **`loyili-prod`** | Datos reales. **Nunca** se usa para pruebas. |
+| Base de datos de producción | Supabase, proyecto **`loyili-prod`** (referencia `ktmwrrvbelgtufbtkzot`) | Datos reales. **Nunca** se usa para pruebas. |
 | Base de datos de desarrollo | Supabase, proyecto `loyili-dev` (vinculado a la CLI) | Desarrollo, `verify:rls` y pruebas de humo. |
 
 **Regla de oro**: las pruebas automáticas (`verify:rls`, pruebas de humo) solo se ejecutan contra `loyili-dev`. Crean usuarios y movimientos que el ledger no permite borrar nunca. Contra producción solo se ejecuta `npm run verify:prod`, que no escribe nada.
@@ -42,8 +42,8 @@ Supabase y las funciones de Vercel deben estar en la misma región. Si están le
 2. Cuando el proyecto esté listo, su **referencia** (*project ref*) aparece en la dirección del panel: `supabase.com/dashboard/project/<ref>`. La referencia no es secreta.
 3. Aplicar las migraciones, sin cambiar el proyecto vinculado (que sigue siendo `loyili-dev`):
    ```
-   npx supabase db push --remote=<ref-de-prod> --dry-run
-   npx supabase db push --remote=<ref-de-prod>
+   npx supabase db push --remote=ktmwrrvbelgtufbtkzot --dry-run
+   npx supabase db push --remote=ktmwrrvbelgtufbtkzot
    ```
 4. Configuración de autenticación, en el panel de `loyili-prod`:
    - **Authentication → Sign In / Providers → Email**: desactivar **Confirm email** (no hay proveedor de correo propio) y fijar la **longitud mínima de contraseña en 8**.
@@ -78,8 +78,8 @@ Supabase y las funciones de Vercel deben estar en la misma región. Si están le
 1. Desarrollar y verificar en local contra `loyili-dev` (lint, typecheck, build, `npm test`, `verify:rls`).
 2. **Si el cambio incluye una migración**, aplicarla a producción **antes** de publicar el código que la usa:
    ```
-   npx supabase db push --remote=<ref-de-prod> --dry-run
-   npx supabase db push --remote=<ref-de-prod>
+   npx supabase db push --remote=ktmwrrvbelgtufbtkzot --dry-run
+   npx supabase db push --remote=ktmwrrvbelgtufbtkzot
    ```
 3. `git push`. Vercel publica en uno o dos minutos. Cada rama distinta de `main` recibe una dirección de vista previa.
 4. `npm run verify:prod`.

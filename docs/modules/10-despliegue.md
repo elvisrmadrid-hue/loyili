@@ -1,6 +1,6 @@
 # Módulo 10 — Despliegue
 
-- **Estado**: validado (2026-11-21)
+- **Estado**: en curso: código en GitHub y migraciones aplicadas a `loyili-prod` (2026-11-24)
 - **Fecha**: 2026-11-21
 
 ## Objetivo
