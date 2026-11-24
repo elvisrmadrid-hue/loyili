@@ -106,6 +106,6 @@ Sin pantallas nuevas.
 
 ## Preguntas abiertas
 
-- [ ] **¿En qué país (o países) estarán tus comercios y clientes?** Decide la región de los servidores.
+- [x] **¿En qué país (o países) estarán tus comercios y clientes?** Panamá primero, luego Centroamérica y países cercanos (2026-11-23). Región elegida: **`us-east-1` (N. Virginia)** en Supabase e **`iad1`** en Vercel. Es la región con menor latencia hacia Panamá y Centroamérica, y sirve bien a todo el continente si Loyili se extiende. La región de un proyecto de Supabase no se puede cambiar después: requeriría migrar a un proyecto nuevo.
 - [x] ¿Tienes ya cuenta en GitHub, Vercel o ambas? Sí, en las dos (2026-11-21).
 - [x] ¿Dominio propio ahora o más adelante? Más adelante, junto con el correo propio (se siguen las recomendaciones).

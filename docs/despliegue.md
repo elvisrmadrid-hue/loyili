@@ -24,7 +24,7 @@ Supabase y las funciones de Vercel deben estar en la misma región. Si están le
 | EE. UU. oeste | `us-west-1` (N. California) | `sfo1` |
 | España y Europa | `eu-central-1` (Fráncfort) | `fra1` |
 
-`loyili-dev` está en `us-east-1`.
+`loyili-dev` está en `us-east-1`. **Decisión (2026-11-23)**: `loyili-prod` también va en `us-east-1`, con Vercel en `iad1`. Mercado inicial: Panamá y Centroamérica.
 
 ## Primera publicación (una sola vez)
 
